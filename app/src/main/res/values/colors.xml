@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="starwars_start">#FFD700</color>
+    <color name="starwars_end">#FFA500</color>
+
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="app_background">#3A4D39</color>
+    <color name="primary_element">#ECE3CE</color>
+    <color name="accent_yellow">#FFC107</color>
+    <color name="light_text">#F0F0F0</color>
+    <color name="card_background">#4A5C4A</color>
+    <color name="primary_element_yellow">#FFD700</color>
+    <color name="text_light">#F5F5F5</color>
+    <color name="text_dark">#333333</color>
+    <color name="hint_text">#A9A9A9</color>
+    <color name="light_gray">#B0B0B0</color>
+    <color name="text_hint">#BBBBBB</color>
+    <color name="card_background_dictionary">#263238</color>
+
+    <color name="transparent">#00000000</color>
+
+
+
+</resources>

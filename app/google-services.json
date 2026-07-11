@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "271262505819",
+    "project_id": "speaksmart-baguio",
+    "storage_bucket": "speaksmart-baguio.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:271262505819:android:6ea9fae56c85977a14587e",
+        "android_client_info": {
+          "package_name": "com.example.speaksmartbaguio",
+          "certificate_hash": "31:8F:B9:48:7F:4B:84:5B:29:3C:95:D2:57:8C:B6:1B:DC:9D:FE:F8"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDrXOz62Pq8koGEkLIjegYlSyZmCqZjNIw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

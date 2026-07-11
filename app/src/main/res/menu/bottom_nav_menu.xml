@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_translator"
+        android:icon="@drawable/ic_translator"
+        android:title="Translator" />
+    <item
+        android:id="@+id/navigation_dictionary"
+        android:icon="@drawable/ic_dictionary"
+        android:title="Dictionary" />
+    <item
+        android:id="@+id/navigation_phrasebook"
+        android:icon="@drawable/ic_phrasebook"
+        android:title="Phrasebook" />
+</menu>

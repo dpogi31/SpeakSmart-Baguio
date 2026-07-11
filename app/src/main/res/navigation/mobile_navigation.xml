@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@id/navigation_translator">
+
+    <fragment
+        android:id="@+id/navigation_translator"
+        android:name="com.example.speaksmartbaguio.TranslatorFragment"
+        android:label="Translator"
+        tools:layout="@layout/fragment_translator" />
+
+    <fragment
+        android:id="@+id/navigation_dictionary"
+        android:name="com.example.speaksmartbaguio.DictionaryFragment"
+        android:label="Dictionary"
+        tools:layout="@layout/fragment_dictionary" />
+
+    <fragment
+        android:id="@+id/navigation_phrasebook"
+        android:name="com.example.speaksmartbaguio.PhrasebookFragment"
+        android:label="Phrasebook"
+        tools:layout="@layout/fragment_phrasebook" >
+        <action
+            android:id="@+id/action_navigation_phrasebook_to_phraseListFragment"
+            app:destination="@id/phraseListFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/phraseListFragment"
+        android:name="com.example.speaksmartbaguio.PhraseListFragment"
+        android:label="Phrases"
+        tools:layout="@layout/fragment_phrase_list" />
+
+</navigation>
