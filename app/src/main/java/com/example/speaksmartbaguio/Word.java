@@ -8,11 +8,12 @@ public class Word {
     private String ilokanoWord;
     private String tagalogTranslation;
     private String partOfSpeech;
+    private String ttsUrl;
+    private String category;
+    private String updatedAt;
 
-    /** Empty constructor required for Firebase */
     public Word() {}
 
-    /** Full constructor */
     public Word(String englishTranslation, String ilokanoWord, String tagalogTranslation, String partOfSpeech) {
         this.englishTranslation = englishTranslation;
         this.ilokanoWord = ilokanoWord;
@@ -20,7 +21,6 @@ public class Word {
         this.partOfSpeech = partOfSpeech;
     }
 
-    /** Getters */
     public String getEnglishTranslation() {
         return englishTranslation != null ? englishTranslation : "";
     }
@@ -37,7 +37,18 @@ public class Word {
         return partOfSpeech != null ? partOfSpeech : "";
     }
 
-    /** Setters */
+    public String getTtsUrl() {
+        return ttsUrl;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public String getUpdatedAt() {
+        return updatedAt;
+    }
+
     public void setEnglishTranslation(String englishTranslation) {
         this.englishTranslation = englishTranslation;
     }
@@ -54,6 +65,18 @@ public class Word {
         this.partOfSpeech = partOfSpeech;
     }
 
+    public void setTtsUrl(String ttsUrl) {
+        this.ttsUrl = ttsUrl;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public void setUpdatedAt(String updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
     @NonNull
     @Override
     public String toString() {
@@ -62,6 +85,9 @@ public class Word {
                 ", ilokanoWord='" + getIlokanoWord() + '\'' +
                 ", tagalogTranslation='" + getTagalogTranslation() + '\'' +
                 ", partOfSpeech='" + getPartOfSpeech() + '\'' +
+                ", ttsUrl='" + ttsUrl + '\'' +
+                ", category='" + category + '\'' +
+                ", updatedAt='" + updatedAt + '\'' +
                 '}';
     }
 }
