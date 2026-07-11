@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -15,12 +16,19 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-public class PhraseAdapter extends RecyclerView.Adapter<PhraseAdapter.PhraseViewHolder> {
+public class PhraseAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+    private static final int TYPE_ITEM = 0;
+    private static final int TYPE_FOOTER = 1;
 
     private List<Phrase> items;
     private OnPhraseClickListener clickListener;
     private String searchQuery = "";
     private String selectedLanguage = "English";
+
+    private boolean isLoading = false;
+    private boolean hasMore = true;
+    private Runnable loadMoreListener;
 
     public interface OnPhraseClickListener {
         void onPlayClicked(Phrase phrase);
@@ -41,16 +49,45 @@ public class PhraseAdapter extends RecyclerView.Adapter<PhraseAdapter.PhraseView
         notifyDataSetChanged();
     }
 
+    public void setPaginationState(boolean isLoading, boolean hasMore) {
+        this.isLoading = isLoading;
+        this.hasMore = hasMore;
+        notifyItemChanged(getItemCount() - 1);
+    }
+
+    public void setOnLoadMoreListener(Runnable listener) {
+        this.loadMoreListener = listener;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (position == items.size()) return TYPE_FOOTER;
+        return TYPE_ITEM;
+    }
+
     @NonNull
     @Override
-    public PhraseViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == TYPE_FOOTER) {
+            View view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_pagination_footer, parent, false);
+            return new FooterViewHolder(view);
+        }
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.list_item_phrase, parent, false);
+                .inflate(R.layout.item_list_card, parent, false);
         return new PhraseViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull PhraseViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        if (holder instanceof PhraseViewHolder) {
+            bindPhrase((PhraseViewHolder) holder, position);
+        } else if (holder instanceof FooterViewHolder) {
+            bindFooter((FooterViewHolder) holder);
+        }
+    }
+
+    private void bindPhrase(PhraseViewHolder holder, int position) {
         Phrase phrase = items.get(position);
 
         String ilokano = phrase.getIlokanoWord() != null ? phrase.getIlokanoWord() : "";
@@ -59,7 +96,6 @@ public class PhraseAdapter extends RecyclerView.Adapter<PhraseAdapter.PhraseView
                 : phrase.getEnglishTranslation();
         targetText = targetText != null ? targetText : "";
 
-        // Highlight search query
         holder.textViewIlokano.setText(getHighlightedText(ilokano, searchQuery));
         holder.textViewSelectedTranslation.setText(getHighlightedText(targetText, searchQuery));
 
@@ -70,9 +106,29 @@ public class PhraseAdapter extends RecyclerView.Adapter<PhraseAdapter.PhraseView
         });
     }
 
+    private void bindFooter(FooterViewHolder holder) {
+        if (isLoading) {
+            holder.progressBar.setVisibility(View.VISIBLE);
+            holder.footerText.setVisibility(View.GONE);
+        } else if (hasMore && items.size() > 0) {
+            holder.progressBar.setVisibility(View.GONE);
+            holder.footerText.setVisibility(View.VISIBLE);
+            holder.footerText.setText("Load more");
+            holder.footerText.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+            holder.itemView.setOnClickListener(v -> {
+                if (loadMoreListener != null) loadMoreListener.run();
+            });
+        } else {
+            holder.progressBar.setVisibility(View.GONE);
+            holder.footerText.setVisibility(View.GONE);
+            holder.itemView.setOnClickListener(null);
+        }
+    }
+
     @Override
     public int getItemCount() {
-        return items.size();
+        int count = items != null ? items.size() : 0;
+        return count + 1;
     }
 
     public void filterList(List<Phrase> filteredList) {
@@ -80,7 +136,12 @@ public class PhraseAdapter extends RecyclerView.Adapter<PhraseAdapter.PhraseView
         notifyDataSetChanged();
     }
 
-    /** Highlight occurrences of search query in text */
+    public void addItems(List<Phrase> newItems) {
+        int start = items.size();
+        items.addAll(newItems);
+        notifyItemRangeInserted(start, newItems.size());
+    }
+
     private Spannable getHighlightedText(String text, String query) {
         Spannable spannable = new SpannableString(text);
         if (query != null && !query.isEmpty()) {
@@ -105,6 +166,17 @@ public class PhraseAdapter extends RecyclerView.Adapter<PhraseAdapter.PhraseView
             textViewIlokano = itemView.findViewById(R.id.textViewIlokano);
             textViewSelectedTranslation = itemView.findViewById(R.id.textViewSelectedTranslation);
             buttonPlay = itemView.findViewById(R.id.buttonPlayAudio);
+        }
+    }
+
+    static class FooterViewHolder extends RecyclerView.ViewHolder {
+        ProgressBar progressBar;
+        TextView footerText;
+
+        FooterViewHolder(@NonNull View itemView) {
+            super(itemView);
+            progressBar = itemView.findViewById(R.id.footerProgress);
+            footerText = itemView.findViewById(R.id.footerText);
         }
     }
 }

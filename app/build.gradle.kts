@@ -8,12 +8,18 @@ android {
     compileSdk = 34
 
 
+    val apiBaseUrl: String = project.findProperty("API_BASE_URL") as String
+    val apiSecretKey: String = project.findProperty("API_SECRET_KEY") as String
+
     defaultConfig {
         applicationId = "com.example.speaksmartbaguio"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
+        buildConfigField("String", "API_SECRET_KEY", "\"$apiSecretKey\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -36,6 +42,7 @@ android {
     buildFeatures {
         viewBinding= true
         dataBinding= true
+        buildConfig= true
     }
     packagingOptions {
         resources {

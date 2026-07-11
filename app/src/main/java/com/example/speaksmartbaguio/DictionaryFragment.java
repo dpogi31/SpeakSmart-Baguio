@@ -1,24 +1,26 @@
 package com.example.speaksmartbaguio;
 
+import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
-import android.text.InputType;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.speaksmartbaguio.databinding.FragmentDictionaryBinding;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,10 +30,18 @@ public class DictionaryFragment extends Fragment {
 
     private FragmentDictionaryBinding binding;
     private DictionaryAdapter dictionaryAdapter;
-    private List<Word> fullWordList = new ArrayList<>();
-    private FirebaseFirestore db;
+    private ApiService apiService;
     private TextToSpeech tts;
+    private MediaPlayer mediaPlayer;
     private String selectedLanguage = "English";
+
+    private int currentPage = 1;
+    private boolean isLoading = false;
+    private boolean hasMore = true;
+    private static final int PAGE_SIZE = 20;
+
+    private Handler searchHandler = new Handler(Looper.getMainLooper());
+    private String pendingSearchQuery = "";
 
     @Nullable
     @Override
@@ -46,12 +56,12 @@ public class DictionaryFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        db = FirebaseFirestore.getInstance();
+        apiService = ApiService.getInstance();
         setupTextToSpeech();
         setupRecyclerView();
         setupLanguageDropdown();
-        fetchWords();
         setupSearch();
+        loadWords(true);
     }
 
     private void setupTextToSpeech() {
@@ -68,8 +78,21 @@ public class DictionaryFragment extends Fragment {
 
     private void setupRecyclerView() {
         dictionaryAdapter = new DictionaryAdapter(new ArrayList<>(), this::speakWord, selectedLanguage);
-        binding.recyclerViewDictionary.setLayoutManager(new LinearLayoutManager(getContext()));
+        dictionaryAdapter.setOnLoadMoreListener(() -> loadWords(false));
+        LinearLayoutManager lm = new LinearLayoutManager(getContext());
+        binding.recyclerViewDictionary.setLayoutManager(lm);
         binding.recyclerViewDictionary.setAdapter(dictionaryAdapter);
+        binding.recyclerViewDictionary.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                if (dy <= 0 || isLoading || !hasMore) return;
+                int totalCount = dictionaryAdapter.getItemCount();
+                int lastVisible = lm.findLastVisibleItemPosition();
+                if (lastVisible >= totalCount - 3) {
+                    loadWords(false);
+                }
+            }
+        });
     }
 
     private void setupLanguageDropdown() {
@@ -91,8 +114,6 @@ public class DictionaryFragment extends Fragment {
         binding.languageDropdown.setOnItemClickListener((parent, view, position, id) -> {
             selectedLanguage = parent.getItemAtPosition(position).toString();
             binding.languageDropdown.setText(selectedLanguage, false);
-
-            // Update adapter with selected language dynamically
             if (dictionaryAdapter != null) {
                 dictionaryAdapter.setSelectedLanguage(selectedLanguage);
             }
@@ -101,94 +122,121 @@ public class DictionaryFragment extends Fragment {
         binding.languageDropdown.setText("", false);
     }
 
-    private void fetchWords() {
-        binding.progressBar.setVisibility(View.VISIBLE);
-        binding.textViewEmpty.setVisibility(View.GONE);
-
-        db.collection("dictionary")
-                .get()
-                .addOnCompleteListener(task -> {
-                    binding.progressBar.setVisibility(View.GONE);
-                    if (task.isSuccessful()) {
-                        fullWordList.clear();
-                        for (QueryDocumentSnapshot doc : task.getResult()) {
-                            Word word = doc.toObject(Word.class);
-                            if (word.getIlokanoWord() == null) word.setIlokanoWord("");
-                            if (word.getEnglishTranslation() == null) word.setEnglishTranslation("");
-                            if (word.getTagalogTranslation() == null) word.setTagalogTranslation("");
-                            if (word.getPartOfSpeech() == null) word.setPartOfSpeech("");
-                            fullWordList.add(word);
-                        }
-
-                        dictionaryAdapter.setSearchQuery("");
-                        dictionaryAdapter.filterList(fullWordList);
-                        binding.textViewEmpty.setVisibility(fullWordList.isEmpty() ? View.VISIBLE : View.GONE);
-                    } else {
-                        Toast.makeText(getContext(), "Failed to load dictionary.", Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
     private void setupSearch() {
         binding.searchBar.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void afterTextChanged(Editable s) {}
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                filterWords(s.toString());
+                searchHandler.removeCallbacksAndMessages(null);
+                pendingSearchQuery = s.toString().trim();
+                searchHandler.postDelayed(() -> loadWords(true), 300);
             }
         });
     }
 
-    private void filterWords(String query) {
-        List<Word> filtered = new ArrayList<>();
-        String lowerQuery = query.toLowerCase().trim();
+    private void loadWords(boolean reset) {
+        if (isLoading) return;
+        if (!reset && !hasMore) return;
 
-        for (Word word : fullWordList) {
-            String ilokano = word.getIlokanoWord().toLowerCase();
-            String english = word.getEnglishTranslation().toLowerCase();
-            String tagalog = word.getTagalogTranslation() != null ? word.getTagalogTranslation().toLowerCase() : "";
+        isLoading = true;
 
-            if (ilokano.contains(lowerQuery) || english.contains(lowerQuery) || tagalog.contains(lowerQuery)) {
-                filtered.add(word);
-            }
+        if (reset) {
+            currentPage = 1;
+            hasMore = true;
+            binding.progressBar.setVisibility(View.VISIBLE);
+            dictionaryAdapter.setPaginationState(false, false);
+        } else {
+            dictionaryAdapter.setPaginationState(true, true);
         }
 
-        binding.textViewEmpty.setVisibility(filtered.isEmpty() ? View.VISIBLE : View.GONE);
-        dictionaryAdapter.setSearchQuery(lowerQuery);
-        dictionaryAdapter.filterList(filtered);
+        apiService.getDictionary(currentPage, PAGE_SIZE, pendingSearchQuery, new ApiService.ApiCallback<Word>() {
+            @Override
+            public void onSuccess(List<Word> items, boolean more) {
+                isLoading = false;
+                binding.progressBar.setVisibility(View.GONE);
+                binding.textViewEmpty.setVisibility(items.isEmpty() && reset ? View.VISIBLE : View.GONE);
+
+                if (reset) {
+                    dictionaryAdapter.filterList(new ArrayList<>(items));
+                } else {
+                    dictionaryAdapter.addItems(items);
+                }
+
+                hasMore = more;
+                currentPage++;
+                dictionaryAdapter.setPaginationState(false, hasMore);
+            }
+
+            @Override
+            public void onError(String error) {
+                isLoading = false;
+                binding.progressBar.setVisibility(View.GONE);
+                dictionaryAdapter.setPaginationState(false, hasMore);
+                Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void speakWord(Word word) {
-        if (word == null || tts == null) return;
+        if (word == null) return;
 
-        tts.stop();
+        String ttsUrl = word.getTtsUrl();
+        if (ttsUrl != null && !ttsUrl.isEmpty()) {
+            playAudio(ttsUrl);
+        }
 
-        String ilokano = word.getIlokanoWord() != null ? word.getIlokanoWord() : "";
         String english = word.getEnglishTranslation() != null ? word.getEnglishTranslation() : "";
         String tagalog = word.getTagalogTranslation() != null ? word.getTagalogTranslation() : "";
 
-        if (!ilokano.isEmpty()) {
-            tts.setLanguage(new Locale("fil", "PH"));
-            tts.speak(ilokano, TextToSpeech.QUEUE_FLUSH, null, "ttsIlokano");
-        }
-
         if (selectedLanguage.equals("English") && !english.isEmpty()) {
-            tts.setLanguage(Locale.US);
-            tts.speak(english, TextToSpeech.QUEUE_ADD, null, "ttsEnglish");
+            if (tts != null) {
+                tts.setLanguage(Locale.US);
+                tts.speak(english, TextToSpeech.QUEUE_FLUSH, null, "ttsEnglish");
+            }
         } else if (selectedLanguage.equals("Tagalog") && !tagalog.isEmpty()) {
-            tts.setLanguage(new Locale("fil", "PH"));
-            tts.speak(tagalog, TextToSpeech.QUEUE_ADD, null, "ttsTagalog");
+            if (tts != null) {
+                tts.setLanguage(new Locale("fil", "PH"));
+                tts.speak(tagalog, TextToSpeech.QUEUE_FLUSH, null, "ttsTagalog");
+            }
+        }
+    }
+
+    private void playAudio(String url) {
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+        mediaPlayer = new MediaPlayer();
+        try {
+            mediaPlayer.setDataSource(url);
+            mediaPlayer.setOnPreparedListener(MediaPlayer::start);
+            mediaPlayer.setOnErrorListener((mp, what, extra) -> {
+                mp.release();
+                mediaPlayer = null;
+                return true;
+            });
+            mediaPlayer.prepareAsync();
+        } catch (Exception e) {
+            if (mediaPlayer != null) {
+                mediaPlayer.release();
+                mediaPlayer = null;
+            }
         }
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
         if (tts != null) {
             tts.stop();
             tts.shutdown();
         }
+        searchHandler.removeCallbacksAndMessages(null);
         binding = null;
     }
 }

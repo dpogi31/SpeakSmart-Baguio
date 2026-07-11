@@ -7,22 +7,20 @@ import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
-import androidx.core.content.ContextCompat;
-import android.text.InputType;
-
-
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.speaksmartbaguio.databinding.FragmentTranslatorBinding;
-import com.google.firebase.firestore.FirebaseFirestore;
+
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -30,7 +28,7 @@ import java.util.Locale;
 public class TranslatorFragment extends Fragment {
 
     private FragmentTranslatorBinding binding;
-    private FirebaseFirestore db;
+    private ApiService apiService;
     private TextToSpeech tts;
 
     private static final int STT_REQUEST_CODE = 100;
@@ -50,7 +48,7 @@ public class TranslatorFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        db = FirebaseFirestore.getInstance();
+        apiService = ApiService.getInstance();
         setupTextToSpeech();
         setupDropdown();
         setupListeners();
@@ -69,10 +67,8 @@ public class TranslatorFragment extends Fragment {
     }
 
     private void setupDropdown() {
-        // Dropdown options
         String[] modes = {"English → Ilokano", "Ilokano → English", "Tagalog → Ilokano", "Ilokano → Tagalog"};
 
-        // Custom ArrayAdapter using bold text layout
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 requireContext(),
                 R.layout.dropdown_item_bold,
@@ -81,22 +77,16 @@ public class TranslatorFragment extends Fragment {
 
         binding.languageDropdown.setAdapter(adapter);
         binding.languageDropdown.setDropDownBackgroundResource(R.drawable.dropdown_glass_background);
-
-        // Make AutoCompleteTextView non-editable but clickable
         binding.languageDropdown.setInputType(InputType.TYPE_NULL);
         binding.languageDropdown.setFocusable(false);
         binding.languageDropdown.setKeyListener(null);
-
-        // Set hint (shows when no selection is made)
         binding.languageDropdown.setHint("Select Target Language");
 
-        // Handle item selection
         binding.languageDropdown.setOnItemClickListener((parent, view, position, id) -> {
             translationMode = modes[position];
             binding.languageDropdown.setText(translationMode, false);
             binding.titleText.setText(translationMode);
 
-            // Clear previous translation/input
             binding.editTextInput.setText("");
             binding.originalText.setText("");
             binding.translatedText.setText("");
@@ -149,17 +139,14 @@ public class TranslatorFragment extends Fragment {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
 
-        // Choose language for speech input
         switch (translationMode) {
             case "Ilokano → English":
                 intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US");
                 break;
-
             default:
                 intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "fil-PH");
                 break;
         }
-
 
         intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak now...");
 
@@ -200,24 +187,24 @@ public class TranslatorFragment extends Fragment {
 
         switch (translationMode) {
             case "English → Ilokano":
-                fieldSearch = "english";
-                fieldResult = "ilokano";
+                fieldSearch = "english_translation";
+                fieldResult = "ilokano_word";
                 break;
             case "Ilokano → English":
-                fieldSearch = "ilokano";
-                fieldResult = "english";
+                fieldSearch = "ilokano_word";
+                fieldResult = "english_translation";
                 break;
             case "Tagalog → Ilokano":
-                fieldSearch = "tagalog";
-                fieldResult = "ilokano";
+                fieldSearch = "tagalog_translation";
+                fieldResult = "ilokano_word";
                 break;
             case "Ilokano → Tagalog":
-                fieldSearch = "ilokano";
-                fieldResult = "tagalog";
+                fieldSearch = "ilokano_word";
+                fieldResult = "tagalog_translation";
                 break;
             default:
-                fieldSearch = "english";
-                fieldResult = "ilokano";
+                fieldSearch = "english_translation";
+                fieldResult = "ilokano_word";
         }
 
         for (String word : words) {
@@ -229,29 +216,30 @@ public class TranslatorFragment extends Fragment {
                 continue;
             }
 
-            db.collection("translations")
-                    .whereEqualTo(fieldSearch, cleanedWord)
-                    .get()
-                    .addOnSuccessListener(querySnapshot -> {
-                        if (!querySnapshot.isEmpty()) {
-                            String translated = querySnapshot.getDocuments().get(0).getString(fieldResult);
-                            translatedSentence.append(translated).append(" ");
-                        } else {
-                            translatedSentence.append(word).append(" ");
-                        }
-                        completed[0]++;
-                        if (completed[0] == totalWords) {
-                            binding.translatedText.setText(capitalizeSentence(translatedSentence.toString().trim()));
-                        }
-                    })
-                    .addOnFailureListener(e -> {
+            apiService.getTranslations(fieldSearch, cleanedWord, new ApiService.SingleResultCallback() {
+                @Override
+                public void onSuccess(JSONObject item) {
+                    if (item != null) {
+                        String translated = item.optString(fieldResult, "");
+                        translatedSentence.append(translated.isEmpty() ? word : translated).append(" ");
+                    } else {
                         translatedSentence.append(word).append(" ");
-                        completed[0]++;
-                        if (completed[0] == totalWords) {
-                            binding.translatedText.setText(capitalizeSentence(translatedSentence.toString().trim()));
-                        }
-                        e.printStackTrace();
-                    });
+                    }
+                    completed[0]++;
+                    if (completed[0] == totalWords) {
+                        binding.translatedText.setText(capitalizeSentence(translatedSentence.toString().trim()));
+                    }
+                }
+
+                @Override
+                public void onError(String error) {
+                    translatedSentence.append(word).append(" ");
+                    completed[0]++;
+                    if (completed[0] == totalWords) {
+                        binding.translatedText.setText(capitalizeSentence(translatedSentence.toString().trim()));
+                    }
+                }
+            });
         }
     }
 
