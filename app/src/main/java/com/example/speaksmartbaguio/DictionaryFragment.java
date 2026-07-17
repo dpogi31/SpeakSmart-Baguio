@@ -33,7 +33,7 @@ import com.example.speaksmartbaguio.databinding.FragmentDictionaryBinding;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
+import android.util.Log;
 public class DictionaryFragment extends Fragment {
 
     private FragmentDictionaryBinding binding;
@@ -46,7 +46,7 @@ public class DictionaryFragment extends Fragment {
     private int currentPage = 1;
     private boolean isLoading = false;
     private boolean hasMore = true;
-    private static final int PAGE_SIZE = 5000;
+    private static final int PAGE_SIZE = 100;
 
     private Handler searchHandler = new Handler(Looper.getMainLooper());
     private String pendingSearchQuery = "";
@@ -66,13 +66,91 @@ public class DictionaryFragment extends Fragment {
 
         apiService = ApiService.getInstance();
         repository = new DictionaryRepository(requireContext());
+
         setupTextToSpeech();
         setupRecyclerView();
         setupLanguageDropdown();
         setupSearch();
-        loadWords(true);
+
+        if (NetworkUtil.isOnline(requireContext())) {
+
+            syncAllDictionaryPages();
+
+        } else {
+
+            loadOfflineWords();
+
+        }
+    }
+    private void syncAllDictionaryPages() {
+
+        currentPage = 1;
+
+
+        downloadNextPage();
+
     }
 
+
+    private void downloadNextPage() {
+
+        apiService.getDictionary(
+                currentPage,
+                PAGE_SIZE,
+                "",
+                new ApiService.ApiCallback<Word>() {
+
+                    @Override
+                    public void onSuccess(List<Word> items, boolean more) {
+
+
+                        repository.insertAll(
+                                EntityMapper.toEntityList(items)
+                        );
+
+
+                        Log.d(
+                                "SYNC_TEST",
+                                "Saved page "
+                                        + currentPage
+                                        + " : "
+                                        + items.size()
+                                        + " words"
+                        );
+
+
+                        if(more){
+
+                            currentPage++;
+
+                            downloadNextPage();
+
+                        }
+                        else{
+
+                            Log.d(
+                                    "SYNC_TEST",
+                                    "SYNC COMPLETE"
+                            );
+
+                        }
+
+                    }
+
+
+                    @Override
+                    public void onError(String error) {
+
+                        Log.e(
+                                "SYNC_TEST",
+                                error
+                        );
+
+                    }
+
+                }
+        );
+    }
     private void setupTextToSpeech() {
         tts = new TextToSpeech(getContext(), status -> {
             if (status != TextToSpeech.SUCCESS) {
@@ -177,12 +255,17 @@ public class DictionaryFragment extends Fragment {
             @Override
             public void onSuccess(List<Word> items, boolean more) {
                 isLoading = false;
-                if (reset && !items.isEmpty()) {
-                    saveWordsToRoom(items);
+                if (!items.isEmpty()) {
+
+                    repository.insertAll(
+                            EntityMapper.toEntityList(items)
+                    );
+
                 }
                 binding.progressBar.setVisibility(View.GONE);
                 binding.textViewEmpty.setVisibility(items.isEmpty() && reset ? View.VISIBLE : View.GONE);
-
+                Log.d("SYNC_TEST", "Downloaded words: " + items.size());
+                Log.d("SYNC_TEST", "Has more: " + more);
                 if (reset) {
                     dictionaryAdapter.filterList(new ArrayList<>(items));
                 } else {
