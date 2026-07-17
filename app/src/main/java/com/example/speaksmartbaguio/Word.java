@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 public class Word {
 
+    private String id;
     private String englishTranslation;
     private String ilokanoWord;
     private String tagalogTranslation;
@@ -12,13 +13,36 @@ public class Word {
     private String category;
     private String updatedAt;
 
-    public Word() {}
+    public Word() {
+    }
 
-    public Word(String englishTranslation, String ilokanoWord, String tagalogTranslation, String partOfSpeech) {
+    public Word(String englishTranslation,
+                String ilokanoWord,
+                String tagalogTranslation,
+                String partOfSpeech) {
+
         this.englishTranslation = englishTranslation;
         this.ilokanoWord = ilokanoWord;
         this.tagalogTranslation = tagalogTranslation;
         this.partOfSpeech = partOfSpeech;
+    }
+
+    // Optional constructor with ID
+    public Word(String id,
+                String englishTranslation,
+                String ilokanoWord,
+                String tagalogTranslation,
+                String partOfSpeech) {
+
+        this.id = id;
+        this.englishTranslation = englishTranslation;
+        this.ilokanoWord = ilokanoWord;
+        this.tagalogTranslation = tagalogTranslation;
+        this.partOfSpeech = partOfSpeech;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getEnglishTranslation() {
@@ -47,6 +71,10 @@ public class Word {
 
     public String getUpdatedAt() {
         return updatedAt;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public void setEnglishTranslation(String englishTranslation) {
@@ -81,7 +109,8 @@ public class Word {
     @Override
     public String toString() {
         return "Word{" +
-                "englishTranslation='" + getEnglishTranslation() + '\'' +
+                "id='" + id + '\'' +
+                ", englishTranslation='" + getEnglishTranslation() + '\'' +
                 ", ilokanoWord='" + getIlokanoWord() + '\'' +
                 ", tagalogTranslation='" + getTagalogTranslation() + '\'' +
                 ", partOfSpeech='" + getPartOfSpeech() + '\'' +

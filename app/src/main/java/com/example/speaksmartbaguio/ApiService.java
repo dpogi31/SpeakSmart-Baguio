@@ -207,6 +207,8 @@ public class ApiService {
         for (int i = 0; i < array.length(); i++) {
             JSONObject item = array.getJSONObject(i);
             Word w = new Word();
+
+            w.setId(getString(item, "id"));
             w.setEnglishTranslation(getString(item, "englishTranslation", "english_translation"));
             w.setIlokanoWord(getString(item, "ilokanoWord", "ilokano_word"));
             w.setTagalogTranslation(getString(item, "tagalogTranslation", "tagalog_translation"));
@@ -225,6 +227,8 @@ public class ApiService {
         for (int i = 0; i < array.length(); i++) {
             JSONObject item = array.getJSONObject(i);
             Phrase p = new Phrase();
+
+            p.setId(getString(item, "id"));
             p.setEnglishTranslation(getString(item, "englishTranslation", "english_translation"));
             p.setIlokanoWord(getString(item, "ilokanoWord", "ilokano_word"));
             p.setTagalogTranslation(getString(item, "tagalogTranslation", "tagalog_translation"));

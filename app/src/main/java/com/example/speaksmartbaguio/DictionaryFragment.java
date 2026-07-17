@@ -13,7 +13,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
+import com.example.speaksmartbaguio.entity.DictionaryEntity;
+import com.example.speaksmartbaguio.mapper.EntityMapper;
+import com.example.speaksmartbaguio.repository.DictionaryRepository;
+import com.example.speaksmartbaguio.utils.NetworkUtil;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 
+import java.util.concurrent.Executors;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -34,11 +42,11 @@ public class DictionaryFragment extends Fragment {
     private TextToSpeech tts;
     private MediaPlayer mediaPlayer;
     private String selectedLanguage = "English";
-
+    private DictionaryRepository repository;
     private int currentPage = 1;
     private boolean isLoading = false;
     private boolean hasMore = true;
-    private static final int PAGE_SIZE = 20;
+    private static final int PAGE_SIZE = 5000;
 
     private Handler searchHandler = new Handler(Looper.getMainLooper());
     private String pendingSearchQuery = "";
@@ -57,6 +65,7 @@ public class DictionaryFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         apiService = ApiService.getInstance();
+        repository = new DictionaryRepository(requireContext());
         setupTextToSpeech();
         setupRecyclerView();
         setupLanguageDropdown();
@@ -136,6 +145,20 @@ public class DictionaryFragment extends Fragment {
     }
 
     private void loadWords(boolean reset) {
+
+        if (!NetworkUtil.isOnline(requireContext())) {
+
+            loadOfflineWords();
+
+            Toast.makeText(
+                    requireContext(),
+                    "Offline Mode",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
         if (isLoading) return;
         if (!reset && !hasMore) return;
 
@@ -154,6 +177,9 @@ public class DictionaryFragment extends Fragment {
             @Override
             public void onSuccess(List<Word> items, boolean more) {
                 isLoading = false;
+                if (reset && !items.isEmpty()) {
+                    saveWordsToRoom(items);
+                }
                 binding.progressBar.setVisibility(View.GONE);
                 binding.textViewEmpty.setVisibility(items.isEmpty() && reset ? View.VISIBLE : View.GONE);
 
@@ -201,7 +227,52 @@ public class DictionaryFragment extends Fragment {
             }
         }
     }
+    private void saveWordsToRoom(List<Word> words) {
 
+        repository.replaceAll(
+                EntityMapper.toEntityList(words)
+        );
+
+    }
+    private void loadOfflineWords() {
+
+        repository.getAllWords(result -> {
+
+            requireActivity().runOnUiThread(() -> {
+
+                List<Word> words =
+                        EntityMapper.toWordList(result);
+
+                binding.progressBar.setVisibility(View.GONE);
+
+                binding.textViewEmpty.setVisibility(
+                        words.isEmpty()
+                                ? View.VISIBLE
+                                : View.GONE
+                );
+
+                dictionaryAdapter.filterList(words);
+
+            });
+
+        });
+
+    }
+    private void searchOffline(String query) {
+
+        repository.searchWords(query, result -> {
+
+            requireActivity().runOnUiThread(() -> {
+
+                dictionaryAdapter.filterList(
+                        EntityMapper.toWordList(result)
+                );
+
+            });
+
+        });
+
+    }
     private void playAudio(String url) {
         if (mediaPlayer != null) {
             mediaPlayer.release();
