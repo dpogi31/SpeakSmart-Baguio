@@ -13,7 +13,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
-
+import com.example.speaksmartbaguio.repository.DictionaryRepository;
+import com.example.speaksmartbaguio.mapper.EntityMapper;
+import com.example.speaksmartbaguio.entity.DictionaryEntity;
+import com.example.speaksmartbaguio.utils.NetworkUtil;
+import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -29,6 +33,7 @@ public class TranslatorFragment extends Fragment {
 
     private FragmentTranslatorBinding binding;
     private ApiService apiService;
+    private DictionaryRepository repository;
     private TextToSpeech tts;
 
     private static final int STT_REQUEST_CODE = 100;
@@ -49,6 +54,7 @@ public class TranslatorFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         apiService = ApiService.getInstance();
+        repository = new DictionaryRepository(requireContext());
         setupTextToSpeech();
         setupDropdown();
         setupListeners();
@@ -178,6 +184,14 @@ public class TranslatorFragment extends Fragment {
     }
 
     private void translateTextWordByWord(String input) {
+
+        if (!NetworkUtil.isOnline(requireContext())) {
+
+            translateOffline(input);
+
+            return;
+        }
+
         String[] words = input.trim().split("\\s+");
         StringBuilder translatedSentence = new StringBuilder();
         final int totalWords = words.length;
@@ -242,7 +256,73 @@ public class TranslatorFragment extends Fragment {
             });
         }
     }
+    private void translateOffline(String input) {
 
+        String[] words = input.trim().split("\\s+");
+
+        repository.getAllWords(entities -> {
+
+            List<Word> dictionary = EntityMapper.toWordList(entities);
+
+            StringBuilder translated = new StringBuilder();
+
+            for (String word : words) {
+
+                String clean = word.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
+
+                String output = word;
+
+                for (Word item : dictionary) {
+
+                    switch (translationMode) {
+
+                        case "English → Ilokano":
+
+                            if (item.getEnglishTranslation().equalsIgnoreCase(clean))
+                                output = item.getIlokanoWord();
+
+                            break;
+
+                        case "Ilokano → English":
+
+                            if (item.getIlokanoWord().equalsIgnoreCase(clean))
+                                output = item.getEnglishTranslation();
+
+                            break;
+
+                        case "Tagalog → Ilokano":
+
+                            if (item.getTagalogTranslation().equalsIgnoreCase(clean))
+                                output = item.getIlokanoWord();
+
+                            break;
+
+                        case "Ilokano → Tagalog":
+
+                            if (item.getIlokanoWord().equalsIgnoreCase(clean))
+                                output = item.getTagalogTranslation();
+
+                            break;
+                    }
+                }
+
+                translated.append(output).append(" ");
+
+            }
+
+            requireActivity().runOnUiThread(() ->
+
+                    binding.translatedText.setText(
+                            capitalizeSentence(
+                                    translated.toString().trim()
+                            )
+                    )
+
+            );
+
+        });
+
+    }
     @Override
     public void onDestroyView() {
         super.onDestroyView();

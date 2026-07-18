@@ -72,14 +72,10 @@ public class DictionaryFragment extends Fragment {
         setupLanguageDropdown();
         setupSearch();
 
+        loadOfflineWords();
+
         if (NetworkUtil.isOnline(requireContext())) {
-
             syncAllDictionaryPages();
-
-        } else {
-
-            loadOfflineWords();
-
         }
     }
     private void syncAllDictionaryPages() {
@@ -126,12 +122,13 @@ public class DictionaryFragment extends Fragment {
                             downloadNextPage();
 
                         }
-                        else{
+                        else {
 
-                            Log.d(
-                                    "SYNC_TEST",
-                                    "SYNC COMPLETE"
-                            );
+                            Log.d("SYNC_TEST", "SYNC COMPLETE");
+
+                            requireActivity().runOnUiThread(() -> {
+                                loadOfflineWords();
+                            });
 
                         }
 
@@ -226,13 +223,11 @@ public class DictionaryFragment extends Fragment {
 
         if (!NetworkUtil.isOnline(requireContext())) {
 
-            loadOfflineWords();
-
-            Toast.makeText(
-                    requireContext(),
-                    "Offline Mode",
-                    Toast.LENGTH_SHORT
-            ).show();
+            if (!pendingSearchQuery.isEmpty()) {
+                searchOffline(pendingSearchQuery);
+            } else {
+                loadOfflineWords();
+            }
 
             return;
         }
@@ -255,13 +250,6 @@ public class DictionaryFragment extends Fragment {
             @Override
             public void onSuccess(List<Word> items, boolean more) {
                 isLoading = false;
-                if (!items.isEmpty()) {
-
-                    repository.insertAll(
-                            EntityMapper.toEntityList(items)
-                    );
-
-                }
                 binding.progressBar.setVisibility(View.GONE);
                 binding.textViewEmpty.setVisibility(items.isEmpty() && reset ? View.VISIBLE : View.GONE);
                 Log.d("SYNC_TEST", "Downloaded words: " + items.size());

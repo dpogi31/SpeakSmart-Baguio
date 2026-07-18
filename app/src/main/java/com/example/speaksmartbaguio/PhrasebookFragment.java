@@ -15,7 +15,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
-
+import com.example.speaksmartbaguio.entity.PhraseEntity;
+import com.example.speaksmartbaguio.mapper.EntityMapper;
+import com.example.speaksmartbaguio.repository.PhraseRepository;
+import com.example.speaksmartbaguio.utils.NetworkUtil;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -33,6 +36,7 @@ public class PhrasebookFragment extends Fragment {
     private FragmentPhrasebookBinding binding;
     private PhrasebookAdapter adapter;
     private ApiService apiService;
+    private PhraseRepository repository;
     private TextToSpeech tts;
     private MediaPlayer mediaPlayer;
     private String selectedLanguage = "English";
@@ -40,7 +44,7 @@ public class PhrasebookFragment extends Fragment {
     private int currentPage = 1;
     private boolean isLoading = false;
     private boolean hasMore = true;
-    private static final int PAGE_SIZE = 20;
+    private static final int PAGE_SIZE = 100;
 
     private Handler searchHandler = new Handler(Looper.getMainLooper());
     private String pendingSearchQuery = "";
@@ -59,13 +63,74 @@ public class PhrasebookFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         apiService = ApiService.getInstance();
+        repository = new PhraseRepository(requireContext());
         setupTextToSpeech();
         setupRecyclerView();
         setupLanguageDropdown();
         setupSearch();
-        loadPhrases(true);
-    }
+        if (NetworkUtil.isOnline(requireContext())) {
 
+            syncAllPhrasePages();
+            loadPhrases(true);
+
+        } else {
+
+            loadOfflinePhrases();
+
+        }
+    }
+    private void syncAllPhrasePages() {
+
+        currentPage = 1;
+
+        repository.deleteAll();
+
+        downloadNextPage();
+
+    }
+    private void savePhrasesToRoom(List<Phrase> phrases) {
+
+        repository.replaceAll(
+                EntityMapper.toPhraseEntityList(phrases)
+        );
+
+    }
+    private void downloadNextPage() {
+
+        apiService.getPhrasebook(
+                currentPage,
+                5000,
+                "",
+                new ApiService.ApiCallback<Phrase>() {
+
+                    @Override
+                    public void onSuccess(List<Phrase> items, boolean more) {
+
+                        repository.insertAll(
+                                EntityMapper.toPhraseEntityList(items)
+                        );
+
+                        if (more) {
+                            currentPage++;
+                            downloadNextPage();
+                        }
+
+                    }
+
+                    @Override
+                    public void onError(String error) {
+
+                        Toast.makeText(
+                                requireContext(),
+                                error,
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                    }
+
+                });
+
+    }
     private void setupTextToSpeech() {
         tts = new TextToSpeech(getContext(), status -> {
             if (status != TextToSpeech.SUCCESS) {
@@ -142,6 +207,24 @@ public class PhrasebookFragment extends Fragment {
     }
 
     private void loadPhrases(boolean reset) {
+
+        if (!NetworkUtil.isOnline(requireContext())) {
+
+            if (pendingSearchQuery.isEmpty()) {
+                loadOfflinePhrases();
+            } else {
+                searchOfflinePhrases(pendingSearchQuery);
+            }
+
+            Toast.makeText(
+                    requireContext(),
+                    "Offline Mode",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
         if (isLoading) return;
         if (!reset && !hasMore) return;
 
@@ -156,34 +239,100 @@ public class PhrasebookFragment extends Fragment {
             adapter.setPaginationState(true, true);
         }
 
-        apiService.getPhrasebook(currentPage, PAGE_SIZE, pendingSearchQuery, new ApiService.ApiCallback<Phrase>() {
-            @Override
-            public void onSuccess(List<Phrase> items, boolean more) {
-                isLoading = false;
-                binding.progressBar.setVisibility(View.GONE);
-                binding.textViewEmpty.setVisibility(items.isEmpty() && reset ? View.VISIBLE : View.GONE);
+        apiService.getPhrasebook(
+                currentPage,
+                PAGE_SIZE,
+                pendingSearchQuery,
+                new ApiService.ApiCallback<Phrase>() {
 
-                if (reset) {
-                    adapter.filterList(new ArrayList<>(items));
-                } else {
-                    adapter.addItems(items);
-                }
+                    @Override
+                    public void onSuccess(List<Phrase> items, boolean more) {
 
-                hasMore = more;
-                currentPage++;
-                adapter.setPaginationState(false, hasMore);
-            }
+                        isLoading = false;
 
-            @Override
-            public void onError(String error) {
-                isLoading = false;
-                binding.progressBar.setVisibility(View.GONE);
-                adapter.setPaginationState(false, hasMore);
-                Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
-            }
-        });
+                        if (reset && !items.isEmpty()) {
+                            savePhrasesToRoom(items);
+                        }
+
+                        binding.progressBar.setVisibility(View.GONE);
+
+                        binding.textViewEmpty.setVisibility(
+                                items.isEmpty() && reset
+                                        ? View.VISIBLE
+                                        : View.GONE
+                        );
+
+                        if (reset) {
+                            adapter.filterList(new ArrayList<>(items));
+                        } else {
+                            adapter.addItems(items);
+                        }
+
+                        hasMore = more;
+                        currentPage++;
+
+                        adapter.setPaginationState(false, hasMore);
+                    }
+
+                    @Override
+                    public void onError(String error) {
+
+                        isLoading = false;
+
+                        binding.progressBar.setVisibility(View.GONE);
+
+                        adapter.setPaginationState(false, hasMore);
+
+                        Toast.makeText(
+                                getContext(),
+                                error,
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                    }
+
+                });
+
     }
+    private void loadOfflinePhrases() {
 
+        repository.getAllPhrases(result -> {
+
+            requireActivity().runOnUiThread(() -> {
+
+                List<Phrase> phrases =
+                        EntityMapper.toPhraseList(result);
+
+                binding.progressBar.setVisibility(View.GONE);
+
+                binding.textViewEmpty.setVisibility(
+                        phrases.isEmpty()
+                                ? View.VISIBLE
+                                : View.GONE
+                );
+
+                adapter.filterList(phrases);
+
+            });
+
+        });
+
+    }
+    private void searchOfflinePhrases(String query) {
+
+        repository.searchPhrases(query, result -> {
+
+            requireActivity().runOnUiThread(() -> {
+
+                adapter.filterList(
+                        EntityMapper.toPhraseList(result)
+                );
+
+            });
+
+        });
+
+    }
     private void speakPhrase(Phrase phrase) {
         if (phrase == null) return;
 
