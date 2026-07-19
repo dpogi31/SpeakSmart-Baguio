@@ -13,23 +13,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
-import com.example.speaksmartbaguio.entity.DictionaryEntity;
 import com.example.speaksmartbaguio.mapper.EntityMapper;
 import com.example.speaksmartbaguio.repository.DictionaryRepository;
 import com.example.speaksmartbaguio.utils.NetworkUtil;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
-
-import java.util.concurrent.Executors;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.speaksmartbaguio.databinding.FragmentDictionaryBinding;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -72,81 +64,11 @@ public class DictionaryFragment extends Fragment {
         setupLanguageDropdown();
         setupSearch();
 
-        loadOfflineWords();
-
         if (NetworkUtil.isOnline(requireContext())) {
-            syncAllDictionaryPages();
+            loadWords(true);
+        } else {
+            loadOfflineWords();
         }
-    }
-    private void syncAllDictionaryPages() {
-
-        currentPage = 1;
-
-
-        downloadNextPage();
-
-    }
-
-
-    private void downloadNextPage() {
-
-        apiService.getDictionary(
-                currentPage,
-                PAGE_SIZE,
-                "",
-                new ApiService.ApiCallback<Word>() {
-
-                    @Override
-                    public void onSuccess(List<Word> items, boolean more) {
-
-
-                        repository.insertAll(
-                                EntityMapper.toEntityList(items)
-                        );
-
-
-                        Log.d(
-                                "SYNC_TEST",
-                                "Saved page "
-                                        + currentPage
-                                        + " : "
-                                        + items.size()
-                                        + " words"
-                        );
-
-
-                        if(more){
-
-                            currentPage++;
-
-                            downloadNextPage();
-
-                        }
-                        else {
-
-                            Log.d("SYNC_TEST", "SYNC COMPLETE");
-
-                            requireActivity().runOnUiThread(() -> {
-                                loadOfflineWords();
-                            });
-
-                        }
-
-                    }
-
-
-                    @Override
-                    public void onError(String error) {
-
-                        Log.e(
-                                "SYNC_TEST",
-                                error
-                        );
-
-                    }
-
-                }
-        );
     }
     private void setupTextToSpeech() {
         tts = new TextToSpeech(getContext(), status -> {
@@ -252,8 +174,6 @@ public class DictionaryFragment extends Fragment {
                 isLoading = false;
                 binding.progressBar.setVisibility(View.GONE);
                 binding.textViewEmpty.setVisibility(items.isEmpty() && reset ? View.VISIBLE : View.GONE);
-                Log.d("SYNC_TEST", "Downloaded words: " + items.size());
-                Log.d("SYNC_TEST", "Has more: " + more);
                 if (reset) {
                     dictionaryAdapter.filterList(new ArrayList<>(items));
                 } else {
@@ -297,13 +217,6 @@ public class DictionaryFragment extends Fragment {
                 tts.speak(tagalog, TextToSpeech.QUEUE_FLUSH, null, "ttsTagalog");
             }
         }
-    }
-    private void saveWordsToRoom(List<Word> words) {
-
-        repository.replaceAll(
-                EntityMapper.toEntityList(words)
-        );
-
     }
     private void loadOfflineWords() {
 

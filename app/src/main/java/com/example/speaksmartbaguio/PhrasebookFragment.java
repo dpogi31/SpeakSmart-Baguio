@@ -69,68 +69,12 @@ public class PhrasebookFragment extends Fragment {
         setupLanguageDropdown();
         setupSearch();
         if (NetworkUtil.isOnline(requireContext())) {
-
-            syncAllPhrasePages();
             loadPhrases(true);
-
         } else {
-
             loadOfflinePhrases();
-
         }
     }
-    private void syncAllPhrasePages() {
 
-        currentPage = 1;
-
-        repository.deleteAll();
-
-        downloadNextPage();
-
-    }
-    private void savePhrasesToRoom(List<Phrase> phrases) {
-
-        repository.replaceAll(
-                EntityMapper.toPhraseEntityList(phrases)
-        );
-
-    }
-    private void downloadNextPage() {
-
-        apiService.getPhrasebook(
-                currentPage,
-                5000,
-                "",
-                new ApiService.ApiCallback<Phrase>() {
-
-                    @Override
-                    public void onSuccess(List<Phrase> items, boolean more) {
-
-                        repository.insertAll(
-                                EntityMapper.toPhraseEntityList(items)
-                        );
-
-                        if (more) {
-                            currentPage++;
-                            downloadNextPage();
-                        }
-
-                    }
-
-                    @Override
-                    public void onError(String error) {
-
-                        Toast.makeText(
-                                requireContext(),
-                                error,
-                                Toast.LENGTH_SHORT
-                        ).show();
-
-                    }
-
-                });
-
-    }
     private void setupTextToSpeech() {
         tts = new TextToSpeech(getContext(), status -> {
             if (status != TextToSpeech.SUCCESS) {
@@ -249,10 +193,6 @@ public class PhrasebookFragment extends Fragment {
                     public void onSuccess(List<Phrase> items, boolean more) {
 
                         isLoading = false;
-
-                        if (reset && !items.isEmpty()) {
-                            savePhrasesToRoom(items);
-                        }
 
                         binding.progressBar.setVisibility(View.GONE);
 
