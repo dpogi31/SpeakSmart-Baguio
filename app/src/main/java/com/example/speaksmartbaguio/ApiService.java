@@ -68,10 +68,12 @@ public class ApiService {
         HttpUrl.Builder urlBuilder =
                 HttpUrl.parse(baseUrl + "api/v1/dictionary").newBuilder();
 
-        urlBuilder.addQueryParameter(field, value);
+        urlBuilder.addQueryParameter(field, "*" + value.toLowerCase() + "*");
         urlBuilder.addQueryParameter("page", "1");
         urlBuilder.addQueryParameter("limit", "1");
+
         Log.d("DICT_URL", urlBuilder.build().toString());
+
         executeRequest(
                 urlBuilder.build(),
                 1,

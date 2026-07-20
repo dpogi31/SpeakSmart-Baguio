@@ -16,7 +16,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Toast;
 import com.example.speaksmartbaguio.repository.DictionaryRepository;
 import com.example.speaksmartbaguio.mapper.EntityMapper;
-import com.example.speaksmartbaguio.entity.DictionaryEntity;
+import android.os.Handler;
+import android.os.Looper;
 import com.example.speaksmartbaguio.utils.NetworkUtil;
 import java.util.List;
 import androidx.annotation.NonNull;
@@ -36,7 +37,10 @@ public class TranslatorFragment extends Fragment {
     private ApiService apiService;
     private DictionaryRepository repository;
     private TextToSpeech tts;
+    private final Handler searchHandler = new Handler(Looper.getMainLooper());
+    private Runnable searchRunnable;
 
+    private String latestInput = "";
     private static final int STT_REQUEST_CODE = 100;
 
     private String translationMode = "English → Ilokano";
@@ -131,10 +135,23 @@ public class TranslatorFragment extends Fragment {
             @Override public void afterTextChanged(Editable s) {}
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+
                 String input = s.toString().trim();
+
                 binding.originalText.setText(input);
-                if (!input.isEmpty()) translateTextWordByWord(input);
-                else binding.translatedText.setText("");
+
+                latestInput = input;
+
+                searchHandler.removeCallbacksAndMessages(null);
+
+                if (input.isEmpty()) {
+                    binding.translatedText.setText("");
+                    return;
+                }
+
+                searchRunnable = () -> translateTextWordByWord(input);
+
+                searchHandler.postDelayed(searchRunnable, 400);
             }
         });
 
@@ -206,25 +223,21 @@ public class TranslatorFragment extends Fragment {
                 continue;
             }
             String fieldSearch;
-
+            Log.d("TYPED WORD", "WORD" + cleanedWord);
+            Log.d("WORD GET", "WORD" + word);
             switch (translationMode) {
-
                 case "English → Ilokano":
-                    fieldSearch = "english";
+                    fieldSearch = "englishTranslation";
                     break;
-
                 case "Ilokano → English":
-                    fieldSearch = "ilokano";
+                    fieldSearch = "ilokanoWord";
                     break;
-
                 case "Tagalog → Ilokano":
-                    fieldSearch = "tagalog";
+                    fieldSearch = "tagalogTranslation";
                     break;
-
                 case "Ilokano → Tagalog":
-                    fieldSearch = "ilokano";
+                    fieldSearch = "ilokanoWord";
                     break;
-
                 default:
                     fieldSearch = "englishTranslation";
             }
@@ -232,19 +245,16 @@ public class TranslatorFragment extends Fragment {
 
                 @Override
                 public void onSuccess(List<Word> results, boolean hasMore) {
-                    Log.d("DICT_SEARCH", "Results size = " + (results == null ? "null" : results.size()));
 
-                    if (results != null && !results.isEmpty()) {
-                        Word w = results.get(0);
-                        Log.d("DICT_SEARCH", "English = " + w.getEnglishTranslation());
-                        Log.d("DICT_SEARCH", "Ilokano = " + w.getIlokanoWord());
-                        Log.d("DICT_SEARCH", "Tagalog = " + w.getTagalogTranslation());
+                    if (!latestInput.equalsIgnoreCase(input)) {
+                        return;
                     }
+
+                    String translated = word;
+
                     if (results != null && !results.isEmpty()) {
 
                         Word item = results.get(0);
-
-                        String translated = "";
 
                         switch (translationMode) {
 
@@ -264,17 +274,9 @@ public class TranslatorFragment extends Fragment {
                                 translated = item.getTagalogTranslation();
                                 break;
                         }
-
-                        translatedSentence.append(
-                                translated.isEmpty() ? word : translated
-                        ).append(" ");
-
-                    } else {
-
-                        translatedSentence.append(word).append(" ");
-
                     }
 
+                    translatedSentence.append(translated).append(" ");
                     completed[0]++;
 
                     if (completed[0] == totalWords) {
@@ -287,8 +289,11 @@ public class TranslatorFragment extends Fragment {
                 @Override
                 public void onError(String error) {
 
-                    translatedSentence.append(word).append(" ");
+                    if (!latestInput.equalsIgnoreCase(input)) {
+                        return;
+                    }
 
+                    translatedSentence.append(word).append(" ");
                     completed[0]++;
 
                     if (completed[0] == totalWords) {
