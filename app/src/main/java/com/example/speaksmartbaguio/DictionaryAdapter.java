@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.BackgroundColorSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -89,7 +90,9 @@ public class DictionaryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
     private void bindWord(WordViewHolder holder, int position) {
         Word currentWord = wordList.get(position);
+        String id= currentWord.getId() != null ? currentWord.getId() : "";
 
+        Log.d("DICTIONARY DEBUG", "DICTIONARY ID:  $id");
         String ilokano = currentWord.getIlokanoWord() != null ? currentWord.getIlokanoWord() : "";
         String english = currentWord.getEnglishTranslation() != null ? currentWord.getEnglishTranslation() : "";
         String tagalog = currentWord.getTagalogTranslation() != null ? currentWord.getTagalogTranslation() : "";

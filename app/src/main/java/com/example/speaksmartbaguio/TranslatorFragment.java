@@ -8,6 +8,7 @@ import android.speech.tts.TextToSpeech;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -196,31 +197,6 @@ public class TranslatorFragment extends Fragment {
         StringBuilder translatedSentence = new StringBuilder();
         final int totalWords = words.length;
         final int[] completed = {0};
-
-        String fieldSearch, fieldResult;
-
-        switch (translationMode) {
-            case "English → Ilokano":
-                fieldSearch = "english_translation";
-                fieldResult = "ilokano_word";
-                break;
-            case "Ilokano → English":
-                fieldSearch = "ilokano_word";
-                fieldResult = "english_translation";
-                break;
-            case "Tagalog → Ilokano":
-                fieldSearch = "tagalog_translation";
-                fieldResult = "ilokano_word";
-                break;
-            case "Ilokano → Tagalog":
-                fieldSearch = "ilokano_word";
-                fieldResult = "tagalog_translation";
-                break;
-            default:
-                fieldSearch = "english_translation";
-                fieldResult = "ilokano_word";
-        }
-
         for (String word : words) {
             String cleanedWord = word.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
 
@@ -229,28 +205,96 @@ public class TranslatorFragment extends Fragment {
                 completed[0]++;
                 continue;
             }
+            String fieldSearch;
 
-            apiService.getTranslations(fieldSearch, cleanedWord, new ApiService.SingleResultCallback() {
+            switch (translationMode) {
+
+                case "English → Ilokano":
+                    fieldSearch = "english";
+                    break;
+
+                case "Ilokano → English":
+                    fieldSearch = "ilokano";
+                    break;
+
+                case "Tagalog → Ilokano":
+                    fieldSearch = "tagalog";
+                    break;
+
+                case "Ilokano → Tagalog":
+                    fieldSearch = "ilokano";
+                    break;
+
+                default:
+                    fieldSearch = "englishTranslation";
+            }
+            apiService.searchDictionaryWord(fieldSearch, cleanedWord, new ApiService.ApiCallback<Word>() {
+
                 @Override
-                public void onSuccess(JSONObject item) {
-                    if (item != null) {
-                        String translated = item.optString(fieldResult, "");
-                        translatedSentence.append(translated.isEmpty() ? word : translated).append(" ");
-                    } else {
-                        translatedSentence.append(word).append(" ");
+                public void onSuccess(List<Word> results, boolean hasMore) {
+                    Log.d("DICT_SEARCH", "Results size = " + (results == null ? "null" : results.size()));
+
+                    if (results != null && !results.isEmpty()) {
+                        Word w = results.get(0);
+                        Log.d("DICT_SEARCH", "English = " + w.getEnglishTranslation());
+                        Log.d("DICT_SEARCH", "Ilokano = " + w.getIlokanoWord());
+                        Log.d("DICT_SEARCH", "Tagalog = " + w.getTagalogTranslation());
                     }
+                    if (results != null && !results.isEmpty()) {
+
+                        Word item = results.get(0);
+
+                        String translated = "";
+
+                        switch (translationMode) {
+
+                            case "English → Ilokano":
+                                translated = item.getIlokanoWord();
+                                break;
+
+                            case "Ilokano → English":
+                                translated = item.getEnglishTranslation();
+                                break;
+
+                            case "Tagalog → Ilokano":
+                                translated = item.getIlokanoWord();
+                                break;
+
+                            case "Ilokano → Tagalog":
+                                translated = item.getTagalogTranslation();
+                                break;
+                        }
+
+                        translatedSentence.append(
+                                translated.isEmpty() ? word : translated
+                        ).append(" ");
+
+                    } else {
+
+                        translatedSentence.append(word).append(" ");
+
+                    }
+
                     completed[0]++;
+
                     if (completed[0] == totalWords) {
-                        binding.translatedText.setText(capitalizeSentence(translatedSentence.toString().trim()));
+                        binding.translatedText.setText(
+                                capitalizeSentence(translatedSentence.toString().trim())
+                        );
                     }
                 }
 
                 @Override
                 public void onError(String error) {
+
                     translatedSentence.append(word).append(" ");
+
                     completed[0]++;
+
                     if (completed[0] == totalWords) {
-                        binding.translatedText.setText(capitalizeSentence(translatedSentence.toString().trim()));
+                        binding.translatedText.setText(
+                                capitalizeSentence(translatedSentence.toString().trim())
+                        );
                     }
                 }
             });

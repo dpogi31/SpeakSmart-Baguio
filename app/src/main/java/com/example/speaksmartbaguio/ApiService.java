@@ -2,6 +2,7 @@ package com.example.speaksmartbaguio;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -62,7 +63,23 @@ public class ApiService {
 
         executeRequest(urlBuilder.build(), page, limit, callback, this::parseWordList);
     }
+    public void searchDictionaryWord(String field, String value, ApiCallback<Word> callback) {
 
+        HttpUrl.Builder urlBuilder =
+                HttpUrl.parse(baseUrl + "api/v1/dictionary").newBuilder();
+
+        urlBuilder.addQueryParameter(field, value);
+        urlBuilder.addQueryParameter("page", "1");
+        urlBuilder.addQueryParameter("limit", "1");
+        Log.d("DICT_URL", urlBuilder.build().toString());
+        executeRequest(
+                urlBuilder.build(),
+                1,
+                1,
+                callback,
+                this::parseWordList
+        );
+    }
     /* ───────── Phrasebook ───────── */
 
     public void getPhrasebook(int page, int limit, String query, ApiCallback<Phrase> callback) {
@@ -80,7 +97,7 @@ public class ApiService {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(baseUrl + "api/v1/translations").newBuilder();
         urlBuilder.addQueryParameter(field, value);
         urlBuilder.addQueryParameter("limit", "1");
-
+        Log.d("TRANSLATOR_API", urlBuilder.build().toString());
         executeSingleRequest(urlBuilder.build(), callback);
     }
 
@@ -88,6 +105,8 @@ public class ApiService {
 
     private <T> void executeRequest(HttpUrl url, int page, int limit, ApiCallback<T> callback, JsonParser<T> parser) {
         Request request = buildRequest(url);
+
+        Log.d("FINAL_REQUEST", request.url().toString());
 
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -104,6 +123,8 @@ public class ApiService {
                     }
 
                     String json = response.body() != null ? response.body().string() : "{}";
+                    Log.d("FINAL_RESPONSE", json);
+                    Log.d("DICT_RESPONSE", json);
                     JSONObject obj = new JSONObject(json);
                     JSONArray data = obj.optJSONArray("data");
 
@@ -138,9 +159,10 @@ public class ApiService {
                     }
 
                     String json = response.body() != null ? response.body().string() : "{}";
+                    Log.d("TRANSLATOR_API", json);
                     JSONObject obj = new JSONObject(json);
                     JSONArray data = obj.optJSONArray("data");
-
+                    Log.d("TRANSLATOR_API", "Items = " + (data == null ? "null" : data.length()));
                     if (data != null && data.length() > 0) {
                         JSONObject item = data.getJSONObject(0);
                         mainHandler.post(() -> callback.onSuccess(item));
@@ -152,6 +174,7 @@ public class ApiService {
                 } finally {
                     if (response.body() != null) response.body().close();
                 }
+
             }
         });
     }
@@ -173,8 +196,21 @@ public class ApiService {
         return obj.optString(fallback, "");
     }
 
-    private String getString(JSONObject obj, String key) {
-        return obj.optString(key, "");
+    private String getString(JSONObject obj, String... keys) {
+
+        for (String key : keys) {
+
+            if (obj.has(key) && !obj.isNull(key)) {
+
+                String value = obj.optString(key, "");
+
+                if (!value.isEmpty()) {
+                    return value;
+                }
+            }
+        }
+
+        return "";
     }
 
     private void addSearchParams(HttpUrl.Builder builder, String query) {
@@ -209,9 +245,20 @@ public class ApiService {
             Word w = new Word();
 
             w.setId(getString(item, "id"));
-            w.setEnglishTranslation(getString(item, "englishTranslation", "english_translation"));
-            w.setIlokanoWord(getString(item, "ilokanoWord", "ilokano_word"));
-            w.setTagalogTranslation(getString(item, "tagalogTranslation", "tagalog_translation"));
+            w.setEnglishTranslation(getString(item,
+                    "english",
+                    "englishTranslation",
+                    "english_translation"));
+
+            w.setIlokanoWord(getString(item,
+                    "ilokano",
+                    "ilokanoWord",
+                    "ilokano_word"));
+
+            w.setTagalogTranslation(getString(item,
+                    "tagalog",
+                    "tagalogTranslation",
+                    "tagalog_translation"));
             w.setPartOfSpeech(getString(item, "partOfSpeech", "part_of_speech"));
             w.setTtsUrl(getString(item, "tts_url"));
             w.setCategory(getString(item, "category"));

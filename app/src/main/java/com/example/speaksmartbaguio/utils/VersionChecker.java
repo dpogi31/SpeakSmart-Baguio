@@ -1,5 +1,5 @@
 package com.example.speaksmartbaguio.utils;
-
+import com.example.speaksmartbaguio.utils.VersionChecker;
 import android.content.Context;
 import android.content.SharedPreferences;
 
