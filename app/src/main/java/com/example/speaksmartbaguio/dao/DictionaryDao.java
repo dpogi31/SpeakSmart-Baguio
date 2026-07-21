@@ -29,7 +29,8 @@ public interface DictionaryDao {
             "englishTranslation LIKE '%' || :query || '%' OR " +
             "tagalogTranslation LIKE '%' || :query || '%'")
     List<DictionaryEntity> searchWords(String query);
-
+    @Query("SELECT COUNT(*) FROM dictionary")
+    int getCount();
     @Query("DELETE FROM dictionary")
     void deleteAll();
 }

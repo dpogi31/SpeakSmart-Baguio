@@ -29,7 +29,8 @@ public interface PhraseDao {
             "englishTranslation LIKE '%' || :query || '%' OR " +
             "tagalogTranslation LIKE '%' || :query || '%'")
     List<PhraseEntity> searchPhrases(String query);
-
+    @Query("SELECT COUNT(*) FROM phrasebook")
+    int getCount();
     @Query("DELETE FROM phrasebook")
     void deleteAll();
 }

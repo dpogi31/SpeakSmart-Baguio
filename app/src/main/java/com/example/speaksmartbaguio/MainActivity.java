@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         SyncManager.sync(getApplicationContext());
+        SyncManager.sync(this);
         BottomNavigationView navView = binding.navView;
 
         // Find NavController
@@ -46,5 +47,6 @@ public class MainActivity extends AppCompatActivity {
                 navView.setSelectedItemId(R.id.navigation_translator);
             }
         }
+
     }
 }

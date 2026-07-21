@@ -171,9 +171,15 @@ public class DictionaryFragment extends Fragment {
         apiService.getDictionary(currentPage, PAGE_SIZE, pendingSearchQuery, new ApiService.ApiCallback<Word>() {
             @Override
             public void onSuccess(List<Word> items, boolean more) {
+
+                if (binding == null) {
+                    return;
+                }
+
                 isLoading = false;
                 binding.progressBar.setVisibility(View.GONE);
                 binding.textViewEmpty.setVisibility(items.isEmpty() && reset ? View.VISIBLE : View.GONE);
+
                 if (reset) {
                     dictionaryAdapter.filterList(new ArrayList<>(items));
                 } else {
@@ -187,10 +193,14 @@ public class DictionaryFragment extends Fragment {
 
             @Override
             public void onError(String error) {
-                isLoading = false;
+
+                if (binding == null) {
+                    return;
+                }
+
                 binding.progressBar.setVisibility(View.GONE);
-                dictionaryAdapter.setPaginationState(false, hasMore);
-                Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+
+                Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
             }
         });
     }

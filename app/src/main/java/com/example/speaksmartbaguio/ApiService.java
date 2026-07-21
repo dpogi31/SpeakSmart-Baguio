@@ -71,9 +71,6 @@ public class ApiService {
         urlBuilder.addQueryParameter(field, "*" + value.toLowerCase() + "*");
         urlBuilder.addQueryParameter("page", "1");
         urlBuilder.addQueryParameter("limit", "1");
-
-        Log.d("DICT_URL", urlBuilder.build().toString());
-
         executeRequest(
                 urlBuilder.build(),
                 1,
@@ -126,7 +123,6 @@ public class ApiService {
 
                     String json = response.body() != null ? response.body().string() : "{}";
                     Log.d("FINAL_RESPONSE", json);
-                    Log.d("DICT_RESPONSE", json);
                     JSONObject obj = new JSONObject(json);
                     JSONArray data = obj.optJSONArray("data");
 
@@ -134,6 +130,7 @@ public class ApiService {
                     boolean hasMore = obj.optBoolean("hasMore", false);
 
                     mainHandler.post(() -> callback.onSuccess(items, hasMore));
+                    Log.d("API_PHRASE", "Items parsed = " + items.size());
                 } catch (Exception e) {
                     postError("Parse error: " + e.getMessage(), callback);
                 } finally {

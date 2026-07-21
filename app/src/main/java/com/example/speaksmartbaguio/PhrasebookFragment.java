@@ -238,21 +238,19 @@ public class PhrasebookFragment extends Fragment {
 
         repository.getAllPhrases(result -> {
 
+            android.util.Log.d("ROOM_PHRASE_COUNT", "Rows = " + result.size());
+
             requireActivity().runOnUiThread(() -> {
 
-                List<Phrase> phrases =
-                        EntityMapper.toPhraseList(result);
+                List<Phrase> phrases = EntityMapper.toPhraseList(result);
 
                 binding.progressBar.setVisibility(View.GONE);
 
                 binding.textViewEmpty.setVisibility(
-                        phrases.isEmpty()
-                                ? View.VISIBLE
-                                : View.GONE
+                        phrases.isEmpty() ? View.VISIBLE : View.GONE
                 );
 
                 adapter.filterList(phrases);
-
             });
 
         });

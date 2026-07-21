@@ -25,27 +25,57 @@ public class SyncManager {
                     Log.d(TAG, "Dictionary update: " + dictionaryNeedsUpdate);
                     Log.d(TAG, "Phrasebook update: " + phrasebookNeedsUpdate);
 
-                    if (dictionaryNeedsUpdate) {
-                        Log.d(TAG, "Updating Dictionary...");
-                        new DictionaryRepository(context)
-                                .syncFromServer(
-                                        context,
-                                        dictionaryVersion,
-                                        () -> Log.d(TAG, "Dictionary synced.")
-                                );
+                    DictionaryRepository dictionaryRepository =
+                            new DictionaryRepository(context);
 
-                    }
+                    new Thread(() -> {
 
-                    if (phrasebookNeedsUpdate) {
-                        Log.d(TAG, "Updating Phrasebook...");
-                        new PhraseRepository(context)
-                                .syncFromServer(
-                                        context,
-                                        phrasebookVersion,
-                                        () -> Log.d(TAG, "Phrasebook synced.")
-                                );
+                        boolean roomEmpty = dictionaryRepository.isEmpty();
 
-                    }
+                        if (dictionaryNeedsUpdate || roomEmpty) {
+
+                            Log.d(TAG, "Updating Dictionary...");
+                            Log.d(TAG, "Room empty = " + roomEmpty);
+
+                            dictionaryRepository.syncFromServer(
+                                    context,
+                                    dictionaryVersion,
+                                    () -> Log.d(TAG, "Dictionary synced.")
+                            );
+
+                        } else {
+
+                            Log.d(TAG, "Dictionary already up to date.");
+
+                        }
+
+                    }).start();
+
+                    PhraseRepository phraseRepository =
+                            new PhraseRepository(context);
+
+                    new Thread(() -> {
+
+                        boolean roomEmpty = phraseRepository.isEmpty();
+
+                        if (phrasebookNeedsUpdate || roomEmpty) {
+
+                            Log.d(TAG, "Updating Phrasebook...");
+                            Log.d(TAG, "Phrase Room empty = " + roomEmpty);
+
+                            phraseRepository.syncFromServer(
+                                    context,
+                                    phrasebookVersion,
+                                    () -> Log.d(TAG, "Phrasebook synced.")
+                            );
+
+                        } else {
+
+                            Log.d(TAG, "Phrasebook already up to date.");
+
+                        }
+
+                    }).start();
                     if (!dictionaryNeedsUpdate && !phrasebookNeedsUpdate) {
                         Log.d(TAG, "Local database is already up to date.");
                     }

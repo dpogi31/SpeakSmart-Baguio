@@ -1,6 +1,8 @@
 package com.example.speaksmartbaguio.repository;
 
 import android.content.Context;
+import android.util.Log;
+
 import java.util.ArrayList;
 import com.example.speaksmartbaguio.dao.PhraseDao;
 import com.example.speaksmartbaguio.database.DatabaseClient;
@@ -21,7 +23,9 @@ public class PhraseRepository {
     public interface DatabaseCallback<T> {
         void onComplete(T result);
     }
-
+    public boolean isEmpty() {
+        return phraseDao.getCount() == 0;
+    }
     public PhraseRepository(Context context) {
         phraseDao = DatabaseClient.getInstance(context).phraseDao();
         executorService = Executors.newSingleThreadExecutor();
@@ -36,10 +40,33 @@ public class PhraseRepository {
     }
 
     public void replaceAll(List<PhraseEntity> entities) {
+
         executorService.execute(() -> {
-            phraseDao.deleteAll();
-            phraseDao.insertAll(entities);
+
+            try {
+
+                Log.d("PHRASE_SYNC", "Deleting old phrases...");
+                phraseDao.deleteAll();
+
+                Log.d("PHRASE_SYNC", "Inserting " + entities.size() + " phrases...");
+
+                phraseDao.insertAll(entities);
+
+                Log.d("PHRASE_SYNC", "Insert finished.");
+
+                Log.d("PHRASE_SYNC",
+                        "Rows after insert = " + phraseDao.getCount());
+
+            } catch (Exception e) {
+
+                Log.e("PHRASE_SYNC",
+                        "ROOM INSERT FAILED",
+                        e);
+
+            }
+
         });
+
     }
 
     public void getAllPhrases(DatabaseCallback<List<PhraseEntity>> callback) {
@@ -48,7 +75,9 @@ public class PhraseRepository {
             callback.onComplete(result);
         });
     }
-
+    public void getCount(DatabaseCallback<Integer> callback) {
+        executorService.execute(() -> callback.onComplete(phraseDao.getCount()));
+    }
     public void searchPhrases(String query,
                               DatabaseCallback<List<PhraseEntity>> callback) {
         executorService.execute(() -> {
@@ -91,10 +120,11 @@ public class PhraseRepository {
                     @Override
                     public void onSuccess(List<Phrase> items,
                                           boolean hasMore) {
-
+                        Log.d("PHRASE_SYNC", "Received = " + items.size());
                         allPhrases.addAll(
                                 EntityMapper.toPhraseEntityList(items)
                         );
+                        Log.d("PHRASE_SYNC", "Buffer size = " + allPhrases.size());
 
                         if (hasMore) {
 
@@ -110,7 +140,8 @@ public class PhraseRepository {
                         } else {
 
                             replaceAll(allPhrases);
-
+                            executorService.execute(() -> {
+                            });
                             VersionChecker.savePhrasebookVersion(
                                     context,
                                     version
@@ -135,59 +166,6 @@ public class PhraseRepository {
 
     }
 
-    private void downloadPage(Context context,
-                              ApiService apiService,
-                              int page,
-                              long serverVersion,
-                              Runnable onFinished) {
-
-        apiService.getPhrasebook(
-                page,
-                100,
-                "",
-                new ApiService.ApiCallback<Phrase>() {
-
-                    @Override
-                    public void onSuccess(List<Phrase> items, boolean hasMore) {
-
-                        insertAll(
-                                EntityMapper.toPhraseEntityList(items)
-                        );
-
-                        if (hasMore) {
-
-                            downloadPage(
-                                    context,
-                                    apiService,
-                                    page + 1,
-                                    serverVersion,
-                                    onFinished
-                            );
-
-                        } else {
-
-                            VersionChecker.savePhrasebookVersion(
-                                    context,
-                                    serverVersion
-                            );
-
-                            if (onFinished != null) {
-                                onFinished.run();
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onError(String error) {
-
-                        if (onFinished != null) {
-                            onFinished.run();
-                        }
-
-                    }
-                }
-        );
-    }
     public void deleteAll() {
         executorService.execute(phraseDao::deleteAll);
     }

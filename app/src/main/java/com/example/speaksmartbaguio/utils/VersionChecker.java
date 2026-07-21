@@ -2,6 +2,7 @@ package com.example.speaksmartbaguio.utils;
 import com.example.speaksmartbaguio.utils.VersionChecker;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -54,7 +55,6 @@ public class VersionChecker {
                             serverDictionary,
                             serverPhrasebook
                     );
-
                 })
                 .addOnFailureListener(e ->
                         callback.onResult(

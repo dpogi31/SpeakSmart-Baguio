@@ -41,7 +41,9 @@ public class DictionaryRepository {
 
         apiService = ApiService.getInstance();
     }
-
+    public boolean isEmpty() {
+        return dictionaryDao.getCount() == 0;
+    }
     public interface LoadCallback {
         void onLoaded(List<DictionaryEntity> result);
     }
@@ -173,14 +175,6 @@ public class DictionaryRepository {
                                 EntityMapper.toEntityList(items)
                         );
 
-                        Log.d(
-                                "SYNC",
-                                "Downloaded page "
-                                        + currentPage
-                                        + " : "
-                                        + items.size()
-                        );
-
                         if (hasMore) {
 
                             currentPage++;
@@ -197,11 +191,6 @@ public class DictionaryRepository {
                             VersionChecker.saveDictionaryVersion(
                                     context,
                                     newVersion
-                            );
-
-                            Log.d(
-                                    "SYNC",
-                                    "Dictionary sync complete"
                             );
 
                             if (callback != null) {
