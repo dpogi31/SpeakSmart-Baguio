@@ -131,7 +131,7 @@ public class ApiService {
                     JSONArray data = obj.optJSONArray("data");
 
                     List<T> items = parser.parse(data);
-                    boolean hasMore = obj.optBoolean("hasMore", false);
+                    boolean hasMore = obj.optBoolean("hasMore", items.size() >= limit);
 
                     mainHandler.post(() -> callback.onSuccess(items, hasMore));
                 } catch (Exception e) {
@@ -218,9 +218,7 @@ public class ApiService {
     private void addSearchParams(HttpUrl.Builder builder, String query) {
         if (query == null || query.trim().isEmpty()) return;
         String q = query.trim().toLowerCase();
-        builder.addQueryParameter("englishTranslation", "*" + q + "*");
         builder.addQueryParameter("ilokanoWord", "*" + q + "*");
-        builder.addQueryParameter("tagalogTranslation", "*" + q + "*");
     }
 
     private void postError(String message, Object callback) {

@@ -56,13 +56,25 @@ public class VersionChecker {
                     );
 
                 })
-                .addOnFailureListener(e ->
-                        callback.onResult(
-                                false,
-                                false,
-                                0,
-                                0
-                        ));
+                .addOnFailureListener(e -> {
+
+                    SharedPreferences prefs =
+                            context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+
+                    long localDictionary =
+                            prefs.getLong("dictionaryVersion", 0);
+
+                    long localPhrasebook =
+                            prefs.getLong("phrasebookVersion", 0);
+
+                    callback.onResult(
+                            localDictionary == 0,
+                            localPhrasebook == 0,
+                            0,
+                            0
+                    );
+
+                });
     }
 
     public static void saveDictionaryVersion(Context context,

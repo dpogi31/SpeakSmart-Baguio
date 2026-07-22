@@ -43,6 +43,7 @@ public class PhrasebookFragment extends Fragment {
 
     private int currentPage = 1;
     private boolean isLoading = false;
+
     private boolean hasMore = true;
     private static final int PAGE_SIZE = 100;
 
@@ -68,10 +69,9 @@ public class PhrasebookFragment extends Fragment {
         setupRecyclerView();
         setupLanguageDropdown();
         setupSearch();
+        loadOfflinePhrases();
         if (NetworkUtil.isOnline(requireContext())) {
             loadPhrases(true);
-        } else {
-            loadOfflinePhrases();
         }
     }
 
@@ -194,6 +194,8 @@ public class PhrasebookFragment extends Fragment {
 
                         isLoading = false;
 
+                        if (binding == null) return;
+
                         binding.progressBar.setVisibility(View.GONE);
 
                         binding.textViewEmpty.setVisibility(
@@ -206,6 +208,7 @@ public class PhrasebookFragment extends Fragment {
                             adapter.filterList(new ArrayList<>(items));
                         } else {
                             adapter.addItems(items);
+                            repository.insertAll(EntityMapper.toPhraseEntityList(items));
                         }
 
                         hasMore = more;
@@ -218,6 +221,8 @@ public class PhrasebookFragment extends Fragment {
                     public void onError(String error) {
 
                         isLoading = false;
+
+                        if (binding == null) return;
 
                         binding.progressBar.setVisibility(View.GONE);
 
@@ -239,6 +244,8 @@ public class PhrasebookFragment extends Fragment {
         repository.getAllPhrases(result -> {
 
             requireActivity().runOnUiThread(() -> {
+
+                if (binding == null) return;
 
                 List<Phrase> phrases =
                         EntityMapper.toPhraseList(result);
@@ -263,6 +270,8 @@ public class PhrasebookFragment extends Fragment {
         repository.searchPhrases(query, result -> {
 
             requireActivity().runOnUiThread(() -> {
+
+                if (binding == null) return;
 
                 adapter.filterList(
                         EntityMapper.toPhraseList(result)
