@@ -218,9 +218,7 @@ public class ApiService {
     private void addSearchParams(HttpUrl.Builder builder, String query) {
         if (query == null || query.trim().isEmpty()) return;
         String q = query.trim().toLowerCase();
-        builder.addQueryParameter("englishTranslation", "*" + q + "*");
         builder.addQueryParameter("ilokanoWord", "*" + q + "*");
-        builder.addQueryParameter("tagalogTranslation", "*" + q + "*");
     }
 
     private void postError(String message, Object callback) {
