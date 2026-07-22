@@ -64,10 +64,9 @@ public class DictionaryFragment extends Fragment {
         setupLanguageDropdown();
         setupSearch();
 
+        loadOfflineWords();
         if (NetworkUtil.isOnline(requireContext())) {
             loadWords(true);
-        } else {
-            loadOfflineWords();
         }
     }
     private void setupTextToSpeech() {
@@ -172,12 +171,14 @@ public class DictionaryFragment extends Fragment {
             @Override
             public void onSuccess(List<Word> items, boolean more) {
                 isLoading = false;
+                if (binding == null) return;
                 binding.progressBar.setVisibility(View.GONE);
                 binding.textViewEmpty.setVisibility(items.isEmpty() && reset ? View.VISIBLE : View.GONE);
                 if (reset) {
                     dictionaryAdapter.filterList(new ArrayList<>(items));
                 } else {
                     dictionaryAdapter.addItems(items);
+                    repository.insertAll(EntityMapper.toEntityList(items));
                 }
 
                 hasMore = more;
@@ -188,6 +189,7 @@ public class DictionaryFragment extends Fragment {
             @Override
             public void onError(String error) {
                 isLoading = false;
+                if (binding == null) return;
                 binding.progressBar.setVisibility(View.GONE);
                 dictionaryAdapter.setPaginationState(false, hasMore);
                 Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
@@ -224,6 +226,8 @@ public class DictionaryFragment extends Fragment {
 
             requireActivity().runOnUiThread(() -> {
 
+                if (binding == null) return;
+
                 List<Word> words =
                         EntityMapper.toWordList(result);
 
@@ -247,6 +251,8 @@ public class DictionaryFragment extends Fragment {
         repository.searchWords(query, result -> {
 
             requireActivity().runOnUiThread(() -> {
+
+                if (binding == null) return;
 
                 dictionaryAdapter.filterList(
                         EntityMapper.toWordList(result)

@@ -131,7 +131,7 @@ public class ApiService {
                     JSONArray data = obj.optJSONArray("data");
 
                     List<T> items = parser.parse(data);
-                    boolean hasMore = obj.optBoolean("hasMore", false);
+                    boolean hasMore = obj.optBoolean("hasMore", items.size() >= limit);
 
                     mainHandler.post(() -> callback.onSuccess(items, hasMore));
                 } catch (Exception e) {
