@@ -94,10 +94,12 @@ public class PhrasebookAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         String translation = "Tagalog".equals(selectedLanguage)
                 ? phrase.getTagalogTranslation() : phrase.getEnglishTranslation();
         translation = translation != null ? translation : "";
-
+        String partOfSpeech = phrase.getPartOfSpeech() != null ? phrase.getIlokanoWord() : ""
+            
         holder.textViewIlokano.setText(getHighlightedText(ilokano, searchQuery));
         holder.textViewSelected.setText(getHighlightedText(translation, searchQuery));
-
+        holder.textViewPartOfSpeech.setText(getHighlightedText(partOfSpeech, searchQuery));
+        
         holder.buttonPlay.setOnClickListener(v -> {
             if (clickListener != null) {
                 clickListener.onPlayClicked(phrase);
@@ -157,13 +159,14 @@ public class PhrasebookAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     }
 
     static class PhraseViewHolder extends RecyclerView.ViewHolder {
-        TextView textViewIlokano, textViewSelected;
+        TextView textViewIlokano, textViewSelected, textViewPartOfSpeech;
         ImageView buttonPlay;
 
         PhraseViewHolder(@NonNull View itemView) {
             super(itemView);
             textViewIlokano = itemView.findViewById(R.id.textViewIlokano);
             textViewSelected = itemView.findViewById(R.id.textViewSelectedTranslation);
+            textViewPartOfSpeech = itemView.findViewById(R.id.textViewPartOfSpeech);
             buttonPlay = itemView.findViewById(R.id.buttonPlayAudio);
         }
     }
