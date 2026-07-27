@@ -175,6 +175,7 @@ public class DictionaryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         public TextView ilokanoWordText;
         public TextView partOfSpeechText;
         public TextView selectedTranslationText;
+        public TextView categoryText;
         public ImageView playAudioButton;
 
         public WordViewHolder(@NonNull View itemView) {
