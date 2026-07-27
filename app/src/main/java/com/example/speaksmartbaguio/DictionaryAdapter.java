@@ -97,7 +97,8 @@ public class DictionaryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         String english = currentWord.getEnglishTranslation() != null ? currentWord.getEnglishTranslation() : "";
         String tagalog = currentWord.getTagalogTranslation() != null ? currentWord.getTagalogTranslation() : "";
         String pos = currentWord.getPartOfSpeech() != null ? currentWord.getPartOfSpeech() : "";
-
+        String category = currentWord.getCategory() != null ? currentWord.getCategory() : "";
+        
         holder.ilokanoWordText.setText(getHighlightedText(ilokano, searchQuery));
         if (!pos.isEmpty()) {
             holder.partOfSpeechText.setVisibility(View.VISIBLE);
@@ -107,7 +108,8 @@ public class DictionaryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         }
         String selectedTranslation = selectedLanguage.equals("Tagalog") ? tagalog : english;
         holder.selectedTranslationText.setText(getHighlightedText(selectedTranslation, searchQuery));
-
+        holder.categoryText.setText(getHighlightedText(category, searchQuery));
+        
         holder.playAudioButton.setOnClickListener(v -> {
             if (playClickListener != null) {
                 playClickListener.onPlayClick(currentWord);
@@ -179,6 +181,7 @@ public class DictionaryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             super(itemView);
             ilokanoWordText = itemView.findViewById(R.id.textViewIlokano);
             partOfSpeechText = itemView.findViewById(R.id.textViewPartOfSpeech);
+            categoryText = itemView.findViewById(R.id.textViewPartOfSpeech);
             selectedTranslationText = itemView.findViewById(R.id.textViewSelectedTranslation);
             playAudioButton = itemView.findViewById(R.id.buttonPlayAudio);
         }
