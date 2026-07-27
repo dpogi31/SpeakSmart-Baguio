@@ -95,9 +95,11 @@ public class PhraseAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 ? phrase.getTagalogTranslation()
                 : phrase.getEnglishTranslation();
         targetText = targetText != null ? targetText : "";
-
+        String partOfSpeech = phrase.getPartOfSpeech() != null ? phrase.getIlokanoWord() : ""
+            
         holder.textViewIlokano.setText(getHighlightedText(ilokano, searchQuery));
         holder.textViewSelectedTranslation.setText(getHighlightedText(targetText, searchQuery));
+        holder.textViewPartOfSpeech.setText(getHighlightedText(partOfSpeech, searchQuery));
 
         holder.buttonPlay.setOnClickListener(v -> {
             if (clickListener != null) {
@@ -158,13 +160,14 @@ public class PhraseAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     static class PhraseViewHolder extends RecyclerView.ViewHolder {
-        TextView textViewIlokano, textViewSelectedTranslation;
+        TextView textViewIlokano, textViewSelectedTranslation, textViewPartOfSpeech;
         ImageView buttonPlay;
 
         PhraseViewHolder(@NonNull View itemView) {
             super(itemView);
             textViewIlokano = itemView.findViewById(R.id.textViewIlokano);
             textViewSelectedTranslation = itemView.findViewById(R.id.textViewSelectedTranslation);
+            textViewPartOfSpeech = itemView.findViewById(R.id.textViewPartOfSpeech);
             buttonPlay = itemView.findViewById(R.id.buttonPlayAudio);
         }
     }
