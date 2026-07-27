@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
+import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -90,30 +90,63 @@ public class DictionaryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
     private void bindWord(WordViewHolder holder, int position) {
         Word currentWord = wordList.get(position);
-        String id= currentWord.getId() != null ? currentWord.getId() : "";
 
-        Log.d("DICTIONARY DEBUG", "DICTIONARY ID:  $id");
+        String id = currentWord.getId() != null ? currentWord.getId() : "";
+
+        Log.d("DICTIONARY DEBUG", "DICTIONARY ID: " + id);
+
         String ilokano = currentWord.getIlokanoWord() != null ? currentWord.getIlokanoWord() : "";
         String english = currentWord.getEnglishTranslation() != null ? currentWord.getEnglishTranslation() : "";
         String tagalog = currentWord.getTagalogTranslation() != null ? currentWord.getTagalogTranslation() : "";
         String pos = currentWord.getPartOfSpeech() != null ? currentWord.getPartOfSpeech() : "";
         String category = currentWord.getCategory() != null ? currentWord.getCategory() : "";
-        
+
         holder.ilokanoWordText.setText(getHighlightedText(ilokano, searchQuery));
+
+        // Part of Speech
         if (!pos.isEmpty()) {
             holder.partOfSpeechText.setVisibility(View.VISIBLE);
             holder.partOfSpeechText.setText(getHighlightedText(pos, searchQuery));
         } else {
             holder.partOfSpeechText.setVisibility(View.GONE);
         }
-        String selectedTranslation = selectedLanguage.equals("Tagalog") ? tagalog : english;
-        holder.selectedTranslationText.setText(getHighlightedText(selectedTranslation, searchQuery));
-        holder.categoryText.setText(getHighlightedText(category, searchQuery));
-        
+
+        // Category
+        if (!category.isEmpty()) {
+            holder.categoryText.setVisibility(View.VISIBLE);
+            holder.categoryText.setText(getHighlightedText(category, searchQuery));
+        } else {
+            holder.categoryText.setVisibility(View.GONE);
+        }
+
+        String selectedTranslation =
+                selectedLanguage.equals("Tagalog") ? tagalog : english;
+
+        holder.selectedTranslationText.setText(
+                getHighlightedText(selectedTranslation, searchQuery)
+        );
+
+        // Existing audio button
         holder.playAudioButton.setOnClickListener(v -> {
             if (playClickListener != null) {
                 playClickListener.onPlayClick(currentWord);
             }
+        });
+
+        // NEW: Open details page when the card is tapped
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(v.getContext(), WordDetailActivity.class);
+
+            intent.putExtra("id", currentWord.getId());
+            intent.putExtra("ilokano", currentWord.getIlokanoWord());
+            intent.putExtra("english", currentWord.getEnglishTranslation());
+            intent.putExtra("tagalog", currentWord.getTagalogTranslation());
+            intent.putExtra("pos", currentWord.getPartOfSpeech());
+            intent.putExtra("category", currentWord.getCategory());
+            intent.putExtra("definition", currentWord.getDefinition());
+            intent.putExtra("ttsUrl", currentWord.getTtsUrl());
+
+            v.getContext().startActivity(intent);
         });
     }
 
@@ -182,7 +215,7 @@ public class DictionaryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             super(itemView);
             ilokanoWordText = itemView.findViewById(R.id.textViewIlokano);
             partOfSpeechText = itemView.findViewById(R.id.textViewPartOfSpeech);
-            categoryText = itemView.findViewById(R.id.textViewPartOfSpeech);
+            categoryText = itemView.findViewById(R.id.textViewCategory);
             selectedTranslationText = itemView.findViewById(R.id.textViewSelectedTranslation);
             playAudioButton = itemView.findViewById(R.id.buttonPlayAudio);
         }

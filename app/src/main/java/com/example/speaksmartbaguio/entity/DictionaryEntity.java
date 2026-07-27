@@ -15,6 +15,7 @@ public class DictionaryEntity {
     private String englishTranslation;
     private String tagalogTranslation;
     private String partOfSpeech;
+    private String definition;
     private String category;
     private String ttsUrl;
     private String updatedAt;
@@ -58,9 +59,15 @@ public class DictionaryEntity {
     public String getPartOfSpeech() {
         return partOfSpeech;
     }
+    public String getDefinition() {
+        return definition;
+    }
 
     public void setPartOfSpeech(String partOfSpeech) {
         this.partOfSpeech = partOfSpeech;
+    }
+    public void setDefinition(String definition) {
+        this.definition = definition;
     }
 
     public String getCategory() {

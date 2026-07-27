@@ -95,7 +95,7 @@ public class PhraseAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 ? phrase.getTagalogTranslation()
                 : phrase.getEnglishTranslation();
         targetText = targetText != null ? targetText : "";
-        String partOfSpeech = phrase.getPartOfSpeech() != null ? phrase.getIlokanoWord() : ""
+        String partOfSpeech = phrase.getPartOfSpeech() != null ? phrase.getIlokanoWord() : "";
             
         holder.textViewIlokano.setText(getHighlightedText(ilokano, searchQuery));
         holder.textViewSelectedTranslation.setText(getHighlightedText(targetText, searchQuery));

@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.BackgroundColorSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -90,16 +91,25 @@ public class PhrasebookAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     private void bindPhrase(PhraseViewHolder holder, int position) {
         Phrase phrase = items.get(position);
 
-        String ilokano = phrase.getIlokanoWord() != null ? phrase.getIlokanoWord() : "";
+        String ilokano = phrase.getIlokanoWord();
         String translation = "Tagalog".equals(selectedLanguage)
-                ? phrase.getTagalogTranslation() : phrase.getEnglishTranslation();
-        translation = translation != null ? translation : "";
-        String partOfSpeech = phrase.getPartOfSpeech() != null ? phrase.getIlokanoWord() : ""
-            
+                ? phrase.getTagalogTranslation()
+                : phrase.getEnglishTranslation();
+
+        String partOfSpeech = phrase.getPartOfSpeech();
+
+        Log.d("PHRASE_TEST", "POS = " + partOfSpeech);
+
         holder.textViewIlokano.setText(getHighlightedText(ilokano, searchQuery));
         holder.textViewSelected.setText(getHighlightedText(translation, searchQuery));
         holder.textViewPartOfSpeech.setText(getHighlightedText(partOfSpeech, searchQuery));
-        
+
+        if (!partOfSpeech.isEmpty()) {
+            holder.textViewPartOfSpeech.setVisibility(View.VISIBLE);
+        } else {
+            holder.textViewPartOfSpeech.setVisibility(View.GONE);
+        }
+
         holder.buttonPlay.setOnClickListener(v -> {
             if (clickListener != null) {
                 clickListener.onPlayClicked(phrase);

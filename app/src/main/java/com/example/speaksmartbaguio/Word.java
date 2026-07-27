@@ -12,19 +12,21 @@ public class Word {
     private String ttsUrl;
     private String category;
     private String updatedAt;
-
+    private String definition;
     public Word() {
     }
 
     public Word(String englishTranslation,
                 String ilokanoWord,
                 String tagalogTranslation,
-                String partOfSpeech) {
+                String partOfSpeech,
+                String definition) {
 
         this.englishTranslation = englishTranslation;
         this.ilokanoWord = ilokanoWord;
         this.tagalogTranslation = tagalogTranslation;
         this.partOfSpeech = partOfSpeech;
+        this.definition = definition;
     }
 
     // Optional constructor with ID
@@ -32,13 +34,15 @@ public class Word {
                 String englishTranslation,
                 String ilokanoWord,
                 String tagalogTranslation,
-                String partOfSpeech) {
+                String partOfSpeech,
+                String definition) {
 
         this.id = id;
         this.englishTranslation = englishTranslation;
         this.ilokanoWord = ilokanoWord;
         this.tagalogTranslation = tagalogTranslation;
         this.partOfSpeech = partOfSpeech;
+        this.definition = definition;
     }
 
     public String getId() {
@@ -72,7 +76,9 @@ public class Word {
     public String getUpdatedAt() {
         return updatedAt;
     }
-
+    public String getDefinition() {
+        return definition != null ? definition : "";
+    }
     public void setId(String id) {
         this.id = id;
     }
@@ -100,7 +106,9 @@ public class Word {
     public void setCategory(String category) {
         this.category = category;
     }
-
+    public void setDefinition(String definition) {
+        this.definition = definition;
+    }
     public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
     }
@@ -114,6 +122,7 @@ public class Word {
                 ", ilokanoWord='" + getIlokanoWord() + '\'' +
                 ", tagalogTranslation='" + getTagalogTranslation() + '\'' +
                 ", partOfSpeech='" + getPartOfSpeech() + '\'' +
+                ", definition='" + getDefinition() + '\'' +
                 ", ttsUrl='" + ttsUrl + '\'' +
                 ", category='" + category + '\'' +
                 ", updatedAt='" + updatedAt + '\'' +

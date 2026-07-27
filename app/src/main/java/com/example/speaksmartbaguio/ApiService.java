@@ -262,6 +262,8 @@ public class ApiService {
             w.setPartOfSpeech(getString(item, "partOfSpeech", "part_of_speech"));
             w.setTtsUrl(getString(item, "tts_url"));
             w.setCategory(getString(item, "category"));
+            w.setDefinition(getString(item,
+                    "definition"));
             w.setUpdatedAt(getString(item, "updated_at"));
             list.add(w);
         }
