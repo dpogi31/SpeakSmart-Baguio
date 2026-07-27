@@ -16,6 +16,8 @@ public class PhraseEntity {
     private String ilokanoWord;
     private String tagalogTranslation;
     private String partOfSpeech;
+    private String ilokanoSentence;
+    private String englishSentence;
     private String ttsUrl;
     private String updatedAt;
 
@@ -61,7 +63,19 @@ public class PhraseEntity {
     public void setTagalogTranslation(String tagalogTranslation) {
         this.tagalogTranslation = tagalogTranslation;
     }
+    public String getIlokanoSentence() {
+        return ilokanoSentence;
+    }
+    public String getEnglishSentence() {
+        return englishSentence;
+    }
 
+    public void setIlokanoSentence(String ilokanoSentence) {
+        this.ilokanoSentence = ilokanoSentence;
+    }
+    public void setEnglishSentence(String englishSentence) {
+        this.englishSentence = englishSentence;
+    }
     public String getPartOfSpeech() {
         return partOfSpeech;
     }

@@ -3,6 +3,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:fillViewport="true"
     android:background="@color/app_background">
 
@@ -16,9 +17,11 @@
             android:id="@+id/btnBack"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:layout_gravity="end"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_back"
-            android:contentDescription="Back"/>
+            android:contentDescription="Back"
+            app:tint="@color/accent_yellow"/>
 
         <TextView
             android:id="@+id/tvIlokano"
@@ -50,12 +53,14 @@
             android:layout_height="wrap_content"
             android:text="English"
             android:textStyle="bold"
+            android:textColor="#FFC107"
             android:textSize="18sp"
             android:layout_marginTop="24dp"/>
 
         <TextView
             android:id="@+id/tvEnglish"
             android:layout_width="wrap_content"
+            android:textColor="@color/text_light"
             android:layout_height="wrap_content"
             android:textSize="18sp"/>
 
@@ -63,6 +68,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Tagalog"
+            android:textColor="#FFC107"
             android:textStyle="bold"
             android:textSize="18sp"
             android:layout_marginTop="20dp"/>
@@ -70,6 +76,7 @@
         <TextView
             android:id="@+id/tvTagalog"
             android:layout_width="wrap_content"
+            android:textColor="@color/text_light"
             android:layout_height="wrap_content"
             android:textSize="18sp"/>
 
@@ -77,6 +84,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Definition"
+            android:textColor="#FFC107"
             android:textStyle="bold"
             android:textSize="18sp"
             android:layout_marginTop="24dp"/>
@@ -86,6 +94,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="16sp"
+            android:textColor="@color/text_light"
             android:lineSpacingExtra="4dp"
             android:layout_marginTop="8dp"/>
 

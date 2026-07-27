@@ -13,7 +13,7 @@ import com.example.speaksmartbaguio.entity.PhraseEntity;
                 DictionaryEntity.class,
                 PhraseEntity.class
         },
-        version = 3,
+        version = 5,
         exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {

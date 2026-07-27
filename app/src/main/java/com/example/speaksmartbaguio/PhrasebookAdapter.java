@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
+import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -109,7 +109,20 @@ public class PhrasebookAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         } else {
             holder.textViewPartOfSpeech.setVisibility(View.GONE);
         }
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(v.getContext(), PhraseDetailActivity.class);
 
+            intent.putExtra("id", phrase.getId());
+            intent.putExtra("ilokano", phrase.getIlokanoWord());
+            intent.putExtra("english", phrase.getEnglishTranslation());
+            intent.putExtra("tagalog", phrase.getTagalogTranslation());
+            intent.putExtra("pos", phrase.getPartOfSpeech());
+            intent.putExtra("category", phrase.getCategory());
+            intent.putExtra("englishSentence", phrase.getEnglishSentence());
+            intent.putExtra("sentence", phrase.getIlokanoSentence());
+
+            v.getContext().startActivity(intent);
+        });
         holder.buttonPlay.setOnClickListener(v -> {
             if (clickListener != null) {
                 clickListener.onPlayClicked(phrase);

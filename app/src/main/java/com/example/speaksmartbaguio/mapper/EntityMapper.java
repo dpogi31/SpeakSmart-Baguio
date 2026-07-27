@@ -71,6 +71,8 @@ public class EntityMapper {
         entity.setTagalogTranslation(phrase.getTagalogTranslation());
         entity.setPartOfSpeech(phrase.getPartOfSpeech());
         entity.setCategory(phrase.getCategory());
+        entity.setIlokanoSentence(phrase.getIlokanoSentence());
+        entity.setEnglishSentence(phrase.getEnglishSentence());
         entity.setTtsUrl(phrase.getTtsUrl());
         entity.setUpdatedAt(phrase.getUpdatedAt());
 
@@ -98,6 +100,8 @@ public class EntityMapper {
         phrase.setTagalogTranslation(entity.getTagalogTranslation());
         phrase.setPartOfSpeech(entity.getPartOfSpeech());
         phrase.setCategory(entity.getCategory());
+        phrase.setIlokanoSentence(entity.getIlokanoSentence());
+        phrase.setEnglishSentence(entity.getEnglishSentence());
         phrase.setTtsUrl(entity.getTtsUrl());
         phrase.setUpdatedAt(entity.getUpdatedAt());
 

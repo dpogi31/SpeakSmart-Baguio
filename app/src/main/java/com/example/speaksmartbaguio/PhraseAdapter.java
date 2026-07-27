@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
+import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -91,15 +91,40 @@ public class PhraseAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         Phrase phrase = items.get(position);
 
         String ilokano = phrase.getIlokanoWord() != null ? phrase.getIlokanoWord() : "";
+
         String targetText = "Tagalog".equals(selectedLanguage)
                 ? phrase.getTagalogTranslation()
                 : phrase.getEnglishTranslation();
         targetText = targetText != null ? targetText : "";
-        String partOfSpeech = phrase.getPartOfSpeech() != null ? phrase.getIlokanoWord() : "";
-            
+
+        String partOfSpeech = phrase.getPartOfSpeech() != null
+                ? phrase.getPartOfSpeech()
+                : "";
+
         holder.textViewIlokano.setText(getHighlightedText(ilokano, searchQuery));
         holder.textViewSelectedTranslation.setText(getHighlightedText(targetText, searchQuery));
-        holder.textViewPartOfSpeech.setText(getHighlightedText(partOfSpeech, searchQuery));
+        if (!partOfSpeech.isEmpty()) {
+            holder.textViewPartOfSpeech.setVisibility(View.VISIBLE);
+            holder.textViewPartOfSpeech.setText(
+                    getHighlightedText(partOfSpeech, searchQuery));
+        } else {
+            holder.textViewPartOfSpeech.setVisibility(View.GONE);
+        }
+
+        // Open detail page
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(v.getContext(), PhraseDetailActivity.class);
+
+            intent.putExtra("id", phrase.getId());
+            intent.putExtra("ilokano", phrase.getIlokanoWord());
+            intent.putExtra("english", phrase.getEnglishTranslation());
+            intent.putExtra("tagalog", phrase.getTagalogTranslation());
+            intent.putExtra("pos", phrase.getPartOfSpeech());
+            intent.putExtra("category", phrase.getCategory());
+            intent.putExtra("sentence", phrase.getIlokanoSentence());
+
+            v.getContext().startActivity(intent);
+        });
 
         holder.buttonPlay.setOnClickListener(v -> {
             if (clickListener != null) {
