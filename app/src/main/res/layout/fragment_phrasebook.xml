@@ -1,83 +1,209 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/app_background"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:background="@color/app_background"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="24dp"
+    android:paddingBottom="8dp">
 
-    <com.google.android.material.textfield.TextInputLayout
+    <!-- ================================================ -->
+    <!-- PHRASEBOOK HEADER                                -->
+    <!-- ================================================ -->
+
+    <TextView
+        android:id="@+id/textViewPhrasebookTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Search Something..."
-        app:boxBackgroundMode="filled"
-        app:boxBackgroundColor="@color/transparent"
-        app:boxStrokeColor="@color/transparent"
-        app:boxStrokeWidth="0dp"
-        app:boxStrokeWidthFocused="0dp"
-    app:boxCornerRadiusTopStart="16dp"
-    app:boxCornerRadiusTopEnd="16dp"
-    app:boxCornerRadiusBottomStart="16dp"
-    app:boxCornerRadiusBottomEnd="16dp"
-    android:padding="0dp">
+        android:text="PHRASEBOOK"
+        android:textColor="@color/accent_teal"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.18"
+        android:includeFontPadding="false" />
 
-    <com.google.android.material.textfield.TextInputEditText
-        android:id="@+id/searchBar"
+    <TextView
+        android:id="@+id/textViewPhrasebookHeading"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="@null"
-        android:padding="12dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Speak with Confidence"
         android:textColor="@color/text_light"
-        android:textColorHint="@color/text_hint"/>
-</com.google.android.material.textfield.TextInputLayout>
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:includeFontPadding="false" />
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/languageDropdownLayout"
+    <TextView
+        android:id="@+id/textViewPhrasebookSubtitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="24dp"
+        android:text="Discover useful everyday phrases in Ilokano."
+        android:textColor="@color/hint_text"
+        android:textSize="14sp"
+        android:lineSpacingExtra="3dp" />
+
+
+    <!-- ================================================ -->
+    <!-- SEARCH FIELD                                     -->
+    <!-- Existing ID: searchBar                           -->
+    <!-- ================================================ -->
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/phrasebookSearchLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        app:endIconMode="dropdown_menu"
+        android:hint="Search phrases..."
         app:boxBackgroundMode="filled"
+        app:boxBackgroundColor="@color/card_background"
+        app:boxStrokeColor="@color/primary_teal"
+        app:boxStrokeWidth="1dp"
+        app:boxStrokeWidthFocused="2dp"
         app:boxCornerRadiusTopStart="16dp"
         app:boxCornerRadiusTopEnd="16dp"
         app:boxCornerRadiusBottomStart="16dp"
         app:boxCornerRadiusBottomEnd="16dp"
-        app:hintEnabled="false">
+        app:hintTextColor="@color/accent_teal"
+        app:startIconDrawable="@android:drawable/ic_menu_search"
+        app:startIconTint="@color/accent_teal"
+        app:endIconMode="clear_text"
+        app:endIconTint="@color/hint_text">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/searchBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="56dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
+            android:inputType="text"
+            android:singleLine="true"
+            android:textColor="@color/text_light"
+            android:textColorHint="@color/hint_text"
+            android:textSize="16sp"
+            android:imeOptions="actionSearch" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+    <!-- ================================================ -->
+    <!-- TARGET LANGUAGE                                  -->
+    <!-- Existing IDs preserved                           -->
+    <!-- ================================================ -->
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="TRANSLATION LANGUAGE"
+        android:textColor="@color/hint_text"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.12" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/languageDropdownLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        app:boxBackgroundMode="filled"
+        app:boxBackgroundColor="@color/card_background"
+        app:boxStrokeColor="@color/primary_teal"
+        app:boxStrokeWidth="1dp"
+        app:boxStrokeWidthFocused="2dp"
+        app:boxCornerRadiusTopStart="16dp"
+        app:boxCornerRadiusTopEnd="16dp"
+        app:boxCornerRadiusBottomStart="16dp"
+        app:boxCornerRadiusBottomEnd="16dp"
+        app:hintEnabled="false"
+        app:endIconMode="dropdown_menu"
+        app:endIconTint="@color/accent_teal">
 
         <AutoCompleteTextView
             android:id="@+id/languageDropdown"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:minHeight="56dp"
             android:background="@drawable/dropdown_glass_background"
             android:backgroundTint="@android:color/transparent"
+            android:paddingStart="16dp"
+            android:paddingTop="14dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="14dp"
+            android:hint="Select Target Language"
             android:textColor="@color/text_light"
             android:textColorHint="@color/hint_text"
-            android:padding="12dp"
-            android:textSize="16sp"
+            android:textSize="15sp"
             android:textStyle="bold"
-            android:hint="Select Target Language"/>
+            android:inputType="none"
+            android:focusable="false"
+            android:clickable="true" />
+
     </com.google.android.material.textfield.TextInputLayout>
+
+
+    <!-- ================================================ -->
+    <!-- RESULTS SECTION HEADER                           -->
+    <!-- ================================================ -->
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:text="Useful Phrases"
+        android:textColor="@color/text_light"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+
+    <!-- ================================================ -->
+    <!-- LOADING INDICATOR                                -->
+    <!-- Existing ID: progressBar                         -->
+    <!-- ================================================ -->
 
     <ProgressBar
         android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="16dp"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="16dp"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/accent_teal"
         android:visibility="gone" />
+
+
+    <!-- ================================================ -->
+    <!-- EMPTY RESULTS MESSAGE                            -->
+    <!-- Existing ID: textViewEmpty                       -->
+    <!-- ================================================ -->
 
     <TextView
         android:id="@+id/textViewEmpty"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="No phrases found"
+        android:layout_marginTop="12dp"
+        android:padding="24dp"
+        android:background="@drawable/dropdown_glass_background"
         android:gravity="center"
-        android:visibility="gone"
+        android:text="No phrases found"
         android:textColor="@color/text_light"
         android:textSize="16sp"
-        android:padding="16dp" />
+        android:lineSpacingExtra="4dp"
+        android:visibility="gone" />
+
+
+    <!-- ================================================ -->
+    <!-- PHRASEBOOK LIST                                  -->
+    <!-- Existing ID: recyclerViewPhrasebook              -->
+    <!-- ================================================ -->
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewPhrasebook"
@@ -85,6 +211,9 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
+        android:paddingTop="4dp"
+        android:paddingBottom="12dp"
         android:scrollbars="vertical"
-        android:paddingBottom="8dp"/>
+        android:overScrollMode="ifContentScrolls" />
+
 </LinearLayout>

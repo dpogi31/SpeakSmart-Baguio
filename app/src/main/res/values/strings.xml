@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">speaksmartbaguio</string>
 
+    <!-- App name -->
+    <string name="app_name">Speak Smart Baguio</string>
+
+    <!-- Dictionary and Phrasebook language options -->
     <string-array name="language_options">
         <item>English</item>
         <item>Tagalog</item>
     </string-array>
+
 </resources>

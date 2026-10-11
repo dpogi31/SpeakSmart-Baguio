@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:paddingTop="30dp"
+    android:paddingBottom="20dp">
+
+    <!-- SUBTLE TEAL DIVIDER -->
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginBottom="20dp"
+        android:background="#332A9D93" />
+
+    <!-- APP NAME -->
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="SPEAK SMART BAGUIO"
+        android:textColor="@color/text_light"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.10" />
+
+    <!-- APP DESCRIPTION -->
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="7dp"
+        android:gravity="center"
+        android:text="A student-developed language learning application"
+        android:textColor="@color/light_gray"
+        android:textSize="12sp"
+        android:lineSpacingExtra="2dp" />
+
+    <!-- INSTITUTION -->
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:gravity="center"
+        android:text="Blue Phenix Skills Training Center Corp."
+        android:textColor="@color/hint_text"
+        android:textSize="12sp"
+        android:lineSpacingExtra="2dp" />
+
+    <!-- TAGLINE -->
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:text="LEARN  •  UNDERSTAND  •  CONNECT"
+        android:textColor="@color/accent_teal"
+        android:textSize="10sp"
+        android:letterSpacing="0.08" />
+
+    <!-- CLOSING MESSAGE -->
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:text="Made for learning, sharing, and preserving language."
+        android:textColor="@color/hint_text"
+        android:textSize="11sp"
+        android:lineSpacingExtra="2dp" />
+
+</LinearLayout>

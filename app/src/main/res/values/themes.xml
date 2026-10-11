@@ -1,18 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
 
+    <!-- =====================================================
+         SPEAK SMART BAGUIO — BAGUIO FROST THEME
+         Main app theme
+         ===================================================== -->
 
-    <style name="Base.Theme.IlokanoTranslator" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/primary_element_yellow</item>
-        <item name="colorOnPrimary">@color/app_background</item>
+    <style
+        name="Base.Theme.IlokanoTranslator"
+        parent="Theme.Material3.DayNight.NoActionBar">
 
-        <item name="colorSecondary">@color/accent_yellow</item>
-        <item name="colorOnSecondary">@color/black</item>
+        <!-- Primary colors -->
+        <item name="colorPrimary">@color/primary_teal</item>
+        <item name="colorOnPrimary">@color/text_dark</item>
 
-        <item name="android:statusBarColor">@color/app_background</item>
+        <!-- Secondary colors -->
+        <item name="colorSecondary">@color/accent_teal</item>
+        <item name="colorOnSecondary">@color/text_dark</item>
+
+        <!-- Amber highlights -->
+        <item name="colorTertiary">@color/accent_yellow</item>
+        <item name="colorOnTertiary">@color/text_dark</item>
+
+        <!-- Surface and text colors -->
+        <item name="colorSurface">@color/card_background</item>
+        <item name="colorOnSurface">@color/text_light</item>
+
+        <!-- App background -->
+        <item name="android:colorBackground">@color/app_background</item>
         <item name="android:windowBackground">@color/app_background</item>
+
+        <!-- System status bar -->
+        <item name="android:statusBarColor">@color/app_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- System navigation bar -->
+        <item name="android:navigationBarColor">@color/app_background</item>
+        <item name="android:windowLightNavigationBar">false</item>
+
+        <!-- Control colors -->
+        <item name="colorControlActivated">@color/primary_teal</item>
+        <item name="colorControlNormal">@color/light_gray</item>
+        <item name="colorControlHighlight">#3357CFC3</item>
+
     </style>
 
-    <style name="Theme.IlokanoTranslator" parent="Base.Theme.IlokanoTranslator" />
+    <!-- Preserve the exact theme name used by AndroidManifest.xml -->
+    <style
+        name="Theme.IlokanoTranslator"
+        parent="Base.Theme.IlokanoTranslator" />
 
 </resources>

@@ -1,4 +1,43 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Base.Theme.Speaksmartbaguio" parent="Theme.Material3.DayNight.NoActionBar">
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- =====================================================
+         SPEAK SMART BAGUIO — NIGHT THEME
+         ===================================================== -->
+
+    <style
+        name="Base.Theme.IlokanoTranslator"
+        parent="Theme.Material3.DayNight.NoActionBar">
+
+        <item name="colorPrimary">@color/primary_teal</item>
+        <item name="colorOnPrimary">@color/text_dark</item>
+
+        <item name="colorSecondary">@color/accent_teal</item>
+        <item name="colorOnSecondary">@color/text_dark</item>
+
+        <item name="colorTertiary">@color/accent_yellow</item>
+        <item name="colorOnTertiary">@color/text_dark</item>
+
+        <item name="colorSurface">@color/card_background</item>
+        <item name="colorOnSurface">@color/text_light</item>
+
+        <item name="android:colorBackground">@color/app_background</item>
+        <item name="android:windowBackground">@color/app_background</item>
+
+        <item name="android:statusBarColor">@color/app_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <item name="android:navigationBarColor">@color/app_background</item>
+
+
+        <item name="colorControlActivated">@color/primary_teal</item>
+        <item name="colorControlNormal">@color/light_gray</item>
+        <item name="colorControlHighlight">#3357CFC3</item>
+
     </style>
+
+    <style
+        name="Theme.IlokanoTranslator"
+        parent="Base.Theme.IlokanoTranslator" />
+
 </resources>
