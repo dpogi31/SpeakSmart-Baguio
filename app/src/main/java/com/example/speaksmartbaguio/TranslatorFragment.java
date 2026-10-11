@@ -23,7 +23,8 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
+import android.content.Context;
+import android.content.SharedPreferences;
 import com.example.speaksmartbaguio.databinding.FragmentTranslatorBinding;
 
 import org.json.JSONObject;
@@ -77,34 +78,110 @@ public class TranslatorFragment extends Fragment {
         });
     }
 
-    private void setupDropdown() {
-        String[] modes = {"English → Ilokano", "Ilokano → English", "Tagalog → Ilokano", "Ilokano → Tagalog"};
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+    private void setupDropdown() {
+        String[] modes = {
+                "English → Ilokano",
+                "Ilokano → English",
+                "Tagalog → Ilokano",
+                "Ilokano → Tagalog"
+        };
+
+        SharedPreferences prefs = requireContext().getSharedPreferences(
+                "TranslatorPrefs",
+                Context.MODE_PRIVATE
+        );
+
+        // Restore the last selected translation mode.
+        translationMode = prefs.getString(
+                "translationMode",
+                "English → Ilokano"
+        );
+
+        // Validate the saved mode in case it is no longer available.
+        boolean validMode = false;
+
+        for (String mode : modes) {
+            if (mode.equals(translationMode)) {
+                validMode = true;
+                break;
+            }
+        }
+
+        if (!validMode) {
+            translationMode = "English → Ilokano";
+        }
+
+        ArrayAdapter<String> dropdownAdapter = new ArrayAdapter<>(
                 requireContext(),
                 R.layout.dropdown_item_bold,
                 modes
         );
 
-        binding.languageDropdown.setAdapter(adapter);
-        binding.languageDropdown.setDropDownBackgroundResource(R.drawable.dropdown_glass_background);
-        binding.languageDropdown.setInputType(InputType.TYPE_NULL);
-        binding.languageDropdown.setFocusable(false);
+        binding.languageDropdown.setAdapter(dropdownAdapter);
+
+        binding.languageDropdown.setDropDownBackgroundResource(
+                R.drawable.dropdown_glass_background
+        );
+
         binding.languageDropdown.setKeyListener(null);
-        binding.languageDropdown.setHint("Select Target Language");
+        binding.languageDropdown.setFocusable(false);
+        binding.languageDropdown.setInputType(InputType.TYPE_NULL);
+        binding.languageDropdown.setThreshold(0);
 
-        binding.languageDropdown.setOnItemClickListener((parent, view, position, id) -> {
-            translationMode = modes[position];
-            binding.languageDropdown.setText(translationMode, false);
-            binding.titleText.setText(translationMode);
+        binding.languageDropdown.setHint("Select Translation Mode");
 
-            binding.editTextInput.setText("");
-            binding.originalText.setText("");
-            binding.translatedText.setText("");
+        // Display the saved translation mode.
+        binding.languageDropdown.setText(translationMode, false);
+        binding.titleText.setText(translationMode);
 
-            setTTSLanguage();
+        // Save the selected mode whenever the user changes it.
+        binding.languageDropdown.setOnItemClickListener(
+                (parent, view, position, id) -> {
+
+                    translationMode =
+                            parent.getItemAtPosition(position).toString();
+
+                    prefs.edit()
+                            .putString("translationMode", translationMode)
+                            .apply();
+
+                    binding.languageDropdown.setText(
+                            translationMode,
+                            false
+                    );
+
+                    binding.titleText.setText(translationMode);
+
+                    // Clear previous translation results when the mode changes.
+                    binding.editTextInput.setText("");
+                    binding.originalText.setText("");
+                    binding.translatedText.setText("");
+
+                    latestInput = "";
+                    searchHandler.removeCallbacksAndMessages(null);
+
+                    setTTSLanguage();
+                }
+        );
+
+        // Always show all four modes when the dropdown is tapped.
+        binding.languageDropdown.setOnClickListener(v -> {
+            dropdownAdapter.getFilter().filter("", count -> {
+                if (binding == null) {
+                    return;
+                }
+
+                binding.languageDropdown.setAdapter(dropdownAdapter);
+                binding.languageDropdown.setText(translationMode, false);
+                binding.languageDropdown.showDropDown();
+            });
         });
+
+        // Configure text-to-speech using the restored mode.
+        setTTSLanguage();
     }
+
 
     private void setTTSLanguage() {
         Locale locale;

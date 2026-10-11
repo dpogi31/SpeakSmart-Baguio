@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import android.util.Log;
+import android.content.Context;
+import android.content.SharedPreferences;
 public class DictionaryFragment extends Fragment {
 
     private FragmentDictionaryBinding binding;
@@ -103,6 +105,14 @@ public class DictionaryFragment extends Fragment {
     private void setupLanguageDropdown() {
         String[] languages = {"English", "Tagalog"};
 
+        SharedPreferences prefs = requireContext().getSharedPreferences(
+                "DictionaryPrefs",
+                Context.MODE_PRIVATE
+        );
+
+        // Restore the previous selection.
+        selectedLanguage = prefs.getString("selectedLanguage", "English");
+
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 requireContext(),
                 R.layout.dropdown_item_bold,
@@ -110,21 +120,47 @@ public class DictionaryFragment extends Fragment {
         );
 
         binding.languageDropdown.setAdapter(adapter);
-        binding.languageDropdown.setDropDownBackgroundResource(R.drawable.dropdown_glass_background);
+        binding.languageDropdown.setDropDownBackgroundResource(
+                R.drawable.dropdown_glass_background
+        );
         binding.languageDropdown.setKeyListener(null);
         binding.languageDropdown.setFocusable(false);
         binding.languageDropdown.setInputType(InputType.TYPE_NULL);
+        binding.languageDropdown.setThreshold(0);
+
         binding.languageDropdownLayout.setHint("Select Target Language");
+
+        // Display the saved language when the fragment opens.
+        binding.languageDropdown.setText(selectedLanguage, false);
+
+        // Always display both available languages when tapped.
+        binding.languageDropdown.setOnClickListener(v -> {
+            adapter.getFilter().filter(null, count -> {
+                binding.languageDropdown.setAdapter(adapter);
+                binding.languageDropdown.setText(selectedLanguage, false);
+                binding.languageDropdown.showDropDown();
+            });
+        });
 
         binding.languageDropdown.setOnItemClickListener((parent, view, position, id) -> {
             selectedLanguage = parent.getItemAtPosition(position).toString();
+
+            // Save the selection for the next visit.
+            prefs.edit()
+                    .putString("selectedLanguage", selectedLanguage)
+                    .apply();
+
             binding.languageDropdown.setText(selectedLanguage, false);
+
             if (dictionaryAdapter != null) {
                 dictionaryAdapter.setSelectedLanguage(selectedLanguage);
             }
         });
 
-        binding.languageDropdown.setText("", false);
+        // Keep the adapter and selected language synchronized.
+        if (dictionaryAdapter != null) {
+            dictionaryAdapter.setSelectedLanguage(selectedLanguage);
+        }
     }
 
     private void setupSearch() {

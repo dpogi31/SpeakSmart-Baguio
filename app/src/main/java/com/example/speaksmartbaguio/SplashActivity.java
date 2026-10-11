@@ -16,7 +16,7 @@ import com.github.ybq.android.spinkit.style.ThreeBounce;
 
 public class SplashActivity extends AppCompatActivity {
 
-    private static final String GROUP_NAME = "STARWARS";
+    private static final String GROUP_NAME = "Taraki ti BP";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -106,8 +106,17 @@ public class PhrasebookFragment extends Fragment {
         });
     }
 
+
     private void setupLanguageDropdown() {
         String[] languages = {"English", "Tagalog"};
+
+        // Restore the last selected language.
+        SharedPreferences prefs = requireContext().getSharedPreferences(
+                "PhrasePrefs",
+                Context.MODE_PRIVATE
+        );
+
+        selectedLanguage = prefs.getString("selectedLanguage", "English");
 
         ArrayAdapter<String> dropdownAdapter = new ArrayAdapter<>(
                 requireContext(),
@@ -116,26 +125,65 @@ public class PhrasebookFragment extends Fragment {
         );
 
         binding.languageDropdown.setAdapter(dropdownAdapter);
-        binding.languageDropdown.setDropDownBackgroundResource(R.drawable.dropdown_glass_background);
+
+        binding.languageDropdown.setDropDownBackgroundResource(
+                R.drawable.dropdown_glass_background
+        );
+
         binding.languageDropdown.setKeyListener(null);
         binding.languageDropdown.setFocusable(false);
         binding.languageDropdown.setInputType(InputType.TYPE_NULL);
+        binding.languageDropdown.setThreshold(0);
+
         binding.languageDropdownLayout.setHint("Select Target Language");
-        binding.languageDropdown.setText("", false);
 
-        binding.languageDropdown.setOnItemClickListener((parent, view, position, id) -> {
-            selectedLanguage = parent.getItemAtPosition(position).toString();
-            binding.languageDropdown.setText(selectedLanguage, false);
-            if (adapter != null) {
-                adapter.setSelectedLanguage(selectedLanguage);
-                adapter.notifyDataSetChanged();
-            }
+        // Display the saved selection when Phrasebook opens.
+        binding.languageDropdown.setText(selectedLanguage, false);
 
-            SharedPreferences prefs = requireContext()
-                    .getSharedPreferences("PhrasePrefs", Context.MODE_PRIVATE);
-            prefs.edit().putString("selectedLanguage", selectedLanguage).apply();
+        // Keep the adapter synchronized with the saved language.
+        if (adapter != null) {
+            adapter.setSelectedLanguage(selectedLanguage);
+            adapter.notifyDataSetChanged();
+        }
+
+        // Show both options whenever the dropdown is tapped.
+        binding.languageDropdown.setOnClickListener(v -> {
+            dropdownAdapter.getFilter().filter("", count -> {
+                if (binding == null) {
+                    return;
+                }
+
+                binding.languageDropdown.setAdapter(dropdownAdapter);
+                binding.languageDropdown.setText(selectedLanguage, false);
+                binding.languageDropdown.showDropDown();
+            });
         });
+
+        // Update and save the selection when a language is chosen.
+        binding.languageDropdown.setOnItemClickListener(
+                (parent, view, position, id) -> {
+
+                    selectedLanguage =
+                            parent.getItemAtPosition(position).toString();
+
+                    // Save selection so it survives navigation.
+                    prefs.edit()
+                            .putString("selectedLanguage", selectedLanguage)
+                            .apply();
+
+                    binding.languageDropdown.setText(
+                            selectedLanguage,
+                            false
+                    );
+
+                    if (adapter != null) {
+                        adapter.setSelectedLanguage(selectedLanguage);
+                        adapter.notifyDataSetChanged();
+                    }
+                }
+        );
     }
+
 
     private void setupSearch() {
         binding.searchBar.addTextChangedListener(new TextWatcher() {
