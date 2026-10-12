@@ -1,14 +1,13 @@
+
 package com.example.speaksmartbaguio.repository;
 
 import android.content.Context;
 
+import com.example.speaksmartbaguio.ApiService;
+import com.example.speaksmartbaguio.Word;
 import com.example.speaksmartbaguio.dao.DictionaryDao;
 import com.example.speaksmartbaguio.database.DatabaseClient;
 import com.example.speaksmartbaguio.entity.DictionaryEntity;
-import android.util.Log;
-
-import com.example.speaksmartbaguio.ApiService;
-import com.example.speaksmartbaguio.Word;
 import com.example.speaksmartbaguio.mapper.EntityMapper;
 import com.example.speaksmartbaguio.utils.VersionChecker;
 
@@ -24,32 +23,28 @@ public class DictionaryRepository {
     private final Context context;
     private final ApiService apiService;
 
-    private static final int PAGE_SIZE = 100;
-
-    private int currentPage = 1;
-
-    private final List<DictionaryEntity> buffer = new ArrayList<>();
-    public DictionaryRepository(Context context) {
-
-        this.context = context.getApplicationContext();
-
-        dictionaryDao = DatabaseClient
-                .getInstance(this.context)
-                .dictionaryDao();
-
-        executorService = Executors.newSingleThreadExecutor();
-
-        apiService = ApiService.getInstance();
-    }
-
     public interface LoadCallback {
         void onLoaded(List<DictionaryEntity> result);
     }
-    public interface SyncCallback {
 
-        void onFinished();
-
+    public interface SyncResultCallback {
+        void onFinished(boolean success, String error);
     }
+
+    public interface SyncCallback {
+        void onFinished();
+    }
+
+    public DictionaryRepository(Context context) {
+        this.context = context.getApplicationContext();
+
+        dictionaryDao = DatabaseClient.getInstance(this.context)
+                .dictionaryDao();
+
+        executorService = Executors.newSingleThreadExecutor();
+        apiService = ApiService.getInstance();
+    }
+
     public void insert(DictionaryEntity entity) {
         executorService.execute(() -> dictionaryDao.insert(entity));
     }
@@ -66,173 +61,131 @@ public class DictionaryRepository {
     }
 
     public void getAllWords(LoadCallback callback) {
-        executorService.execute(() -> {
-            List<DictionaryEntity> result = dictionaryDao.getAllWords();
-            callback.onLoaded(result);
-        });
+        executorService.execute(() ->
+                callback.onLoaded(dictionaryDao.getAllWords())
+        );
     }
 
     public void searchWords(String query, LoadCallback callback) {
-        executorService.execute(() -> {
-            List<DictionaryEntity> result = dictionaryDao.searchWords(query);
-            callback.onLoaded(result);
-        });
+        executorService.execute(() ->
+                callback.onLoaded(dictionaryDao.searchWords(query))
+        );
     }
+
+    // Backward-compatible method for existing callers.
     public void syncFromServer(
             Context context,
             long version,
-            Runnable finished) {
-
-        ApiService api = ApiService.getInstance();
-
-        List<DictionaryEntity> allWords = new ArrayList<>();
-
-        downloadPage(
-                api,
-                context,
-                version,
-                1,
-                allWords,
-                finished
-        );
+            Runnable finished
+    ) {
+        syncFromServer(context, version, (success, error) -> {
+            if (finished != null) {
+                finished.run();
+            }
+        });
     }
-    private void downloadPage(
-            ApiService api,
+
+    public void syncFromServer(
             Context context,
             long version,
-            int page,
-            List<DictionaryEntity> allWords,
-            Runnable finished) {
+            SyncResultCallback callback
+    ) {
+        List<DictionaryEntity> allWords = new ArrayList<>();
 
-        api.getDictionary(
+        downloadPage(1, version, allWords, callback);
+    }
+
+    private void downloadPage(
+            int page,
+            long version,
+            List<DictionaryEntity> allWords,
+            SyncResultCallback callback
+    ) {
+        apiService.getDictionary(
                 page,
                 100,
                 "",
                 new ApiService.ApiCallback<Word>() {
-
                     @Override
-                    public void onSuccess(List<Word> items,
-                                          boolean hasMore) {
-
-                        allWords.addAll(
-                                EntityMapper.toEntityList(items)
-                        );
-
-                        if (hasMore) {
-
-                            downloadPage(
-                                    api,
-                                    context,
-                                    version,
-                                    page + 1,
-                                    allWords,
-                                    finished
-                            );
-
-                        } else {
-
-                            replaceAll(allWords);
-
-                            VersionChecker.saveDictionaryVersion(
-                                    context,
-                                    version
-                            );
-
-                            if (finished != null)
-                                finished.run();
-
-                        }
-
-                    }
-
-                    @Override
-                    public void onError(String error) {
-
-                        if (finished != null)
-                            finished.run();
-
-                    }
-
-                });
-
-    }
-    private void downloadPage(long newVersion,
-                              SyncCallback callback) {
-
-        apiService.getDictionary(
-                currentPage,
-                PAGE_SIZE,
-                "",
-                new ApiService.ApiCallback<Word>() {
-
-                    @Override
-                    public void onSuccess(List<Word> items,
-                                          boolean hasMore) {
-
-                        buffer.addAll(
-                                EntityMapper.toEntityList(items)
-                        );
-
-                        Log.d(
-                                "SYNC",
-                                "Downloaded page "
-                                        + currentPage
-                                        + " : "
-                                        + items.size()
-                        );
-
-                        if (hasMore) {
-
-                            currentPage++;
-
-                            downloadPage(
-                                    newVersion,
-                                    callback
-                            );
-
-                        } else {
-
-                            replaceAll(buffer);
-
-                            VersionChecker.saveDictionaryVersion(
-                                    context,
-                                    newVersion
-                            );
-
-                            Log.d(
-                                    "SYNC",
-                                    "Dictionary sync complete"
-                            );
-
-                            if (callback != null) {
-
-                                callback.onFinished();
-
+                    public void onSuccess(
+                            List<Word> items,
+                            boolean hasMore
+                    ) {
+                        try {
+                            if (items != null) {
+                                allWords.addAll(
+                                        EntityMapper.toEntityList(items)
+                                );
                             }
 
+                            if (hasMore) {
+                                downloadPage(
+                                        page + 1,
+                                        version,
+                                        allWords,
+                                        callback
+                                );
+                            } else {
+                                saveDownloadedWords(version, allWords, callback);
+                            }
+                        } catch (Exception error) {
+                            reportFailure(callback, error.getMessage());
                         }
-
                     }
 
                     @Override
                     public void onError(String error) {
-
-                        Log.e(
-                                "SYNC",
-                                error
-                        );
-
-                        if (callback != null) {
-
-                            callback.onFinished();
-
-                        }
-
+                        reportFailure(callback, error);
                     }
-
-                });
-
+                }
+        );
     }
+
+    private void saveDownloadedWords(
+            long version,
+            List<DictionaryEntity> words,
+            SyncResultCallback callback
+    ) {
+        executorService.execute(() -> {
+            try {
+                dictionaryDao.deleteAll();
+                dictionaryDao.insertAll(words);
+
+                // Save the version only after Room operations succeed.
+                VersionChecker.saveDictionaryVersion(context, version);
+
+                reportSuccess(callback);
+            } catch (Exception error) {
+                reportFailure(
+                        callback,
+                        error.getMessage() == null
+                                ? "Could not save dictionary data."
+                                : error.getMessage()
+                );
+            }
+        });
+    }
+
+    private void reportSuccess(SyncResultCallback callback) {
+        if (callback != null) {
+            callback.onFinished(true, null);
+        }
+    }
+
+    private void reportFailure(
+            SyncResultCallback callback,
+            String error
+    ) {
+        if (callback != null) {
+            callback.onFinished(
+                    false,
+                    error == null || error.trim().isEmpty()
+                            ? "Dictionary synchronization failed."
+                            : error
+            );
+        }
+    }
+
     public void deleteAll() {
         executorService.execute(dictionaryDao::deleteAll);
     }

@@ -21,10 +21,12 @@
         android:id="@+id/navigation_phrasebook"
         android:name="com.example.speaksmartbaguio.PhrasebookFragment"
         android:label="Phrasebook"
-        tools:layout="@layout/fragment_phrasebook" >
+        tools:layout="@layout/fragment_phrasebook">
+
         <action
             android:id="@+id/action_navigation_phrasebook_to_phraseListFragment"
             app:destination="@id/phraseListFragment" />
+
     </fragment>
 
     <fragment
@@ -32,5 +34,25 @@
         android:name="com.example.speaksmartbaguio.PhraseListFragment"
         android:label="Phrases"
         tools:layout="@layout/fragment_phrase_list" />
+
+    <fragment
+        android:id="@+id/navigation_favorites"
+        android:name="com.example.speaksmartbaguio.FavoritesFragment"
+        android:label="Favorites"
+        tools:layout="@layout/fragment_favorites" />
+
+    <fragment
+        android:id="@+id/navigation_accessibility_settings"
+        android:name="com.example.speaksmartbaguio.AccessibilitySettingsFragment"
+        android:label="Accessibility Settings"
+        tools:layout="@layout/fragment_accessibility_settings" />
+
+    <!-- ABOUT SPEAK SMART -->
+
+    <fragment
+        android:id="@+id/navigation_about"
+        android:name="com.example.speaksmartbaguio.AboutSpeakSmartFragment"
+        android:label="About Speak Smart"
+        tools:layout="@layout/fragment_about_speak_smart" />
 
 </navigation>

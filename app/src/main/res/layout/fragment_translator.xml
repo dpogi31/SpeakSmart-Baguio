@@ -16,21 +16,45 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingStart="24dp"
-        android:paddingTop="24dp"
+        android:paddingTop="16dp"
         android:paddingEnd="24dp"
         android:paddingBottom="28dp">
 
-        <!-- PAGE HEADER -->
+        <!-- PAGE HEADER AND SETTINGS BUTTON -->
 
-        <TextView
-            android:id="@+id/translatorPageHeading"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="TRANSLATOR"
-            android:textColor="@color/accent_teal"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.16" />
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/translatorPageHeading"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="TRANSLATOR"
+                android:textColor="@color/accent_teal"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.16" />
+
+            <ImageButton
+                android:id="@+id/buttonSettingsMenu"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_settings_teal"
+                android:contentDescription="Open settings menu"
+                android:padding="12dp"
+                android:scaleType="centerInside"
+                android:clickable="true"
+                android:focusable="true"
+                android:importantForAccessibility="yes" />
+
+        </LinearLayout>
+
+        <!-- TRANSLATION TITLE -->
 
         <TextView
             android:id="@+id/titleText"
@@ -148,7 +172,7 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- VOICE ACTIONS -->
+        <!-- VOICE ACTIONS HEADING -->
 
         <TextView
             android:layout_width="match_parent"
@@ -160,6 +184,8 @@
             android:textSize="12sp"
             android:textStyle="bold"
             android:letterSpacing="0.12" />
+
+        <!-- VOICE ACTION BUTTONS -->
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -359,7 +385,7 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- MATCHING HOME SCREEN FOOTER -->
+        <!-- HOME SCREEN FOOTER -->
 
         <include
             layout="@layout/view_app_footer" />

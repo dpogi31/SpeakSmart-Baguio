@@ -3,12 +3,13 @@ package com.example.speaksmartbaguio;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
-import android.speech.tts.UtteranceProgressListener;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.speaksmartbaguio.utils.AccessibilityPreferences;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -64,22 +65,30 @@ public class WordDetailActivity extends AppCompatActivity {
         ttsUrl = getIntent().getStringExtra("ttsUrl");
 
         // Prevent null values from appearing in the interface.
-        if (ilokanoWord == null) ilokanoWord = "";
+        if (ilokanoWord == null) {
+            ilokanoWord = "";
+        }
+
         if (english == null || english.trim().isEmpty()) {
             english = "No English translation available.";
         }
+
         if (tagalog == null || tagalog.trim().isEmpty()) {
             tagalog = "No Tagalog translation available.";
         }
+
         if (pos == null || pos.trim().isEmpty()) {
             pos = "Part of speech not specified";
         }
+
         if (category == null || category.trim().isEmpty()) {
             category = "Category not specified";
         }
+
         if (definition == null || definition.trim().isEmpty()) {
             definition = "No definition available.";
         }
+
         if (ttsUrl == null) {
             ttsUrl = "";
         }
@@ -90,6 +99,12 @@ public class WordDetailActivity extends AppCompatActivity {
         tvPartOfSpeech.setText(pos);
         tvCategory.setText(category);
         tvDefinition.setText(definition);
+
+        // Apply saved font-size, high-contrast, and simplified-layout settings.
+        AccessibilityPreferences.applyToViewTree(
+                this,
+                getWindow().getDecorView()
+        );
 
         // Initialize Android Text-to-Speech.
         initializeTextToSpeech();

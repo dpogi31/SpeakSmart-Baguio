@@ -20,7 +20,7 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingStart="18dp"
-        android:paddingEnd="14dp"
+        android:paddingEnd="8dp"
         android:paddingTop="18dp"
         android:paddingBottom="18dp">
 
@@ -31,8 +31,6 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical">
-
-            <!-- Ilokano phrase -->
 
             <TextView
                 android:id="@+id/textViewIlokano"
@@ -45,8 +43,6 @@
                 android:maxLines="3"
                 android:ellipsize="end" />
 
-            <!-- Part of speech / phrase type -->
-
             <TextView
                 android:id="@+id/textViewPartOfSpeech"
                 android:layout_width="wrap_content"
@@ -56,8 +52,6 @@
                 android:textSize="12sp"
                 android:textStyle="italic"
                 android:visibility="gone" />
-
-            <!-- Selected translation -->
 
             <TextView
                 android:id="@+id/textViewSelectedTranslation"
@@ -70,8 +64,6 @@
                 android:maxLines="4"
                 android:ellipsize="end" />
 
-            <!-- Tap hint -->
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -82,13 +74,30 @@
 
         </LinearLayout>
 
+        <!-- FAVORITES BUTTON -->
+
+        <TextView
+            android:id="@+id/buttonFavorite"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="2dp"
+            android:gravity="center"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:text="♡"
+            android:textColor="@color/accent_teal"
+            android:textSize="30sp"
+            android:contentDescription="Add phrase to Favorites"
+            android:importantForAccessibility="yes" />
+
         <!-- PRONUNCIATION BUTTON -->
 
         <ImageButton
             android:id="@+id/buttonPlayAudio"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="2dp"
             android:padding="12dp"
             android:background="@drawable/bg_speaker_button"
             android:contentDescription="Play phrase pronunciation"

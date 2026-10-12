@@ -8,23 +8,46 @@
     android:background="@color/app_background"
     android:paddingStart="20dp"
     android:paddingEnd="20dp"
-    android:paddingTop="24dp"
+    android:paddingTop="16dp"
     android:paddingBottom="8dp">
 
-    <!-- ================================================ -->
-    <!-- PHRASEBOOK HEADER                                -->
-    <!-- ================================================ -->
+    <!-- PHRASEBOOK HEADER AND SETTINGS -->
 
-    <TextView
-        android:id="@+id/textViewPhrasebookTitle"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="PHRASEBOOK"
-        android:textColor="@color/accent_teal"
-        android:textSize="12sp"
-        android:textStyle="bold"
-        android:letterSpacing="0.18"
-        android:includeFontPadding="false" />
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:id="@+id/textViewPhrasebookTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="PHRASEBOOK"
+            android:textColor="@color/accent_teal"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.18"
+            android:includeFontPadding="false" />
+
+        <ImageButton
+            android:id="@+id/buttonSettingsMenu"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_settings_teal"
+            android:contentDescription="Open settings menu"
+            android:padding="12dp"
+            android:scaleType="centerInside"
+            android:clickable="true"
+            android:focusable="true"
+            android:importantForAccessibility="yes" />
+
+    </LinearLayout>
+
+    <!-- PAGE HEADING -->
 
     <TextView
         android:id="@+id/textViewPhrasebookHeading"
@@ -48,11 +71,7 @@
         android:textSize="14sp"
         android:lineSpacingExtra="3dp" />
 
-
-    <!-- ================================================ -->
-    <!-- SEARCH FIELD                                     -->
-    <!-- Existing ID: searchBar                           -->
-    <!-- ================================================ -->
+    <!-- SEARCH FIELD -->
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/phrasebookSearchLayout"
@@ -92,20 +111,18 @@
     </com.google.android.material.textfield.TextInputLayout>
 
 
-    <!-- ================================================ -->
-    <!-- TARGET LANGUAGE                                  -->
-    <!-- Existing IDs preserved                           -->
-    <!-- ================================================ -->
+    <!-- TARGET LANGUAGE -->
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="22dp"
         android:layout_marginBottom="8dp"
         android:text="TRANSLATION LANGUAGE"
         android:textColor="@color/hint_text"
         android:textSize="11sp"
         android:textStyle="bold"
-        android:letterSpacing="0.12" />
+        android:letterSpacing="0.10" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/languageDropdownLayout"
@@ -115,9 +132,9 @@
         android:layout_marginBottom="20dp"
         app:boxBackgroundMode="filled"
         app:boxBackgroundColor="@color/card_background"
-        app:boxStrokeColor="@color/primary_teal"
+        app:boxStrokeColor="@color/accent_teal"
         app:boxStrokeWidth="1dp"
-        app:boxStrokeWidthFocused="2dp"
+        app:boxStrokeWidthFocused="1dp"
         app:boxCornerRadiusTopStart="16dp"
         app:boxCornerRadiusTopEnd="16dp"
         app:boxCornerRadiusBottomStart="16dp"
@@ -131,8 +148,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="56dp"
-            android:background="@drawable/dropdown_glass_background"
-            android:backgroundTint="@android:color/transparent"
+            android:background="@android:color/transparent"
             android:paddingStart="16dp"
             android:paddingTop="14dp"
             android:paddingEnd="16dp"
@@ -140,7 +156,7 @@
             android:hint="Select Target Language"
             android:textColor="@color/text_light"
             android:textColorHint="@color/hint_text"
-            android:textSize="15sp"
+            android:textSize="16sp"
             android:textStyle="bold"
             android:inputType="none"
             android:focusable="false"
@@ -149,9 +165,7 @@
     </com.google.android.material.textfield.TextInputLayout>
 
 
-    <!-- ================================================ -->
-    <!-- RESULTS SECTION HEADER                           -->
-    <!-- ================================================ -->
+    <!-- RESULTS SECTION HEADER -->
 
     <TextView
         android:layout_width="match_parent"
@@ -162,11 +176,7 @@
         android:textSize="18sp"
         android:textStyle="bold" />
 
-
-    <!-- ================================================ -->
-    <!-- LOADING INDICATOR                                -->
-    <!-- Existing ID: progressBar                         -->
-    <!-- ================================================ -->
+    <!-- LOADING INDICATOR -->
 
     <ProgressBar
         android:id="@+id/progressBar"
@@ -179,11 +189,7 @@
         android:indeterminateTint="@color/accent_teal"
         android:visibility="gone" />
 
-
-    <!-- ================================================ -->
-    <!-- EMPTY RESULTS MESSAGE                            -->
-    <!-- Existing ID: textViewEmpty                       -->
-    <!-- ================================================ -->
+    <!-- EMPTY RESULTS MESSAGE -->
 
     <TextView
         android:id="@+id/textViewEmpty"
@@ -199,11 +205,7 @@
         android:lineSpacingExtra="4dp"
         android:visibility="gone" />
 
-
-    <!-- ================================================ -->
-    <!-- PHRASEBOOK LIST                                  -->
-    <!-- Existing ID: recyclerViewPhrasebook              -->
-    <!-- ================================================ -->
+    <!-- PHRASEBOOK LIST -->
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewPhrasebook"

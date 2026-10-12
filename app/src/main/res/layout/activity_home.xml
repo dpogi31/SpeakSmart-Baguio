@@ -111,8 +111,91 @@
         </com.google.android.material.card.MaterialCardView>
 
         <!-- ==========================================
+             CONNECTION AND SYNC STATUS
+             Separate card below the welcome banner
+             ========================================== -->
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/homeSyncStatusCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            app:cardBackgroundColor="@color/card_background"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/accent_teal"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="CONNECTION &amp; SYNC"
+                    android:textColor="@color/text_light"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08" />
+
+                <TextView
+                    android:id="@+id/tvConnectionStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Checking connection..."
+                    android:textColor="@color/accent_teal"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvSyncStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Preparing synchronization status..."
+                    android:textColor="@color/text_light"
+                    android:textSize="14sp"
+                    android:lineSpacingExtra="3dp" />
+
+                <ProgressBar
+                    android:id="@+id/progressSync"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="4dp"
+                    android:layout_marginTop="14dp"
+                    android:indeterminate="true"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tvLastSync"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Last successful sync: Not yet synced"
+                    android:textColor="@color/hint_text"
+                    android:textSize="12sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnRetrySync"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Retry Sync"
+                    android:textAllCaps="false"
+                    android:textColor="@android:color/white"
+                    app:backgroundTint="@color/primary_teal"
+                    app:cornerRadius="12dp" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ==========================================
              LEARNING TOOLS SECTION
-             Existing section ID preserved
              ========================================== -->
 
         <TextView
@@ -137,7 +220,6 @@
 
         <!-- ==========================================
              TRANSLATOR CARD
-             Existing ID preserved
              ========================================== -->
 
         <com.google.android.material.card.MaterialCardView
@@ -210,7 +292,6 @@
 
         <!-- ==========================================
              DICTIONARY CARD
-             Existing ID preserved
              ========================================== -->
 
         <com.google.android.material.card.MaterialCardView
@@ -283,7 +364,6 @@
 
         <!-- ==========================================
              PHRASEBOOK CARD
-             Existing ID preserved
              ========================================== -->
 
         <com.google.android.material.card.MaterialCardView
@@ -356,7 +436,6 @@
 
         <!-- ==========================================
              ILOKANO PHRASE OF THE DAY
-             Static sample for now
              ========================================== -->
 
         <com.google.android.material.card.MaterialCardView

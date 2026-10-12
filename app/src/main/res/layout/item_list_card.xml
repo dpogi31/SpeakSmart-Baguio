@@ -18,13 +18,11 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingStart="16dp"
-        android:paddingEnd="12dp"
+        android:paddingEnd="8dp"
         android:paddingTop="16dp"
         android:paddingBottom="16dp">
 
-        <!-- ============================================ -->
-        <!-- WORD INFORMATION                             -->
-        <!-- ============================================ -->
+        <!-- WORD INFORMATION -->
 
         <LinearLayout
             android:layout_width="0dp"
@@ -32,8 +30,6 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center_vertical">
-
-            <!-- Ilokano word -->
 
             <TextView
                 android:id="@+id/textViewIlokano"
@@ -45,8 +41,6 @@
                 android:maxLines="2"
                 android:ellipsize="end" />
 
-            <!-- Part of speech -->
-
             <TextView
                 android:id="@+id/textViewPartOfSpeech"
                 android:layout_width="wrap_content"
@@ -55,9 +49,7 @@
                 android:textColor="@color/hint_text"
                 android:textSize="12sp"
                 android:textStyle="italic"
-                android:visibility="visible" />
-
-            <!-- Category -->
+                android:visibility="gone" />
 
             <TextView
                 android:id="@+id/textViewCategory"
@@ -71,9 +63,8 @@
                 android:background="@drawable/dropdown_glass_background"
                 android:textColor="@color/accent_teal"
                 android:textSize="11sp"
-                android:textStyle="bold" />
-
-            <!-- Selected translation -->
+                android:textStyle="bold"
+                android:visibility="gone" />
 
             <TextView
                 android:id="@+id/textViewSelectedTranslation"
@@ -88,18 +79,31 @@
 
         </LinearLayout>
 
-        <!-- ============================================ -->
-        <!-- PRONUNCIATION BUTTON                         -->
-        <!-- Keep ID: buttonPlayAudio                     -->
-        <!-- ============================================ -->
+        <!-- FAVORITES BUTTON -->
+
+        <TextView
+            android:id="@+id/buttonFavorite"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="4dp"
+            android:gravity="center"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:text="♡"
+            android:textColor="@color/accent_teal"
+            android:textSize="30sp"
+            android:contentDescription="Add to Favorites"
+            android:importantForAccessibility="yes" />
+
+        <!-- PRONUNCIATION BUTTON -->
 
         <ImageButton
             android:id="@+id/buttonPlayAudio"
             android:layout_width="44dp"
             android:layout_height="44dp"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="2dp"
             android:padding="10dp"
-            android:backgroundTint="@color/primary_element"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Play word pronunciation"
             android:src="@drawable/ic_sound"

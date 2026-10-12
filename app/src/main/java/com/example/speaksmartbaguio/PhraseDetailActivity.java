@@ -7,6 +7,8 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.speaksmartbaguio.utils.AccessibilityPreferences;
+
 public class PhraseDetailActivity extends AppCompatActivity {
 
     private TextView tvIlokano;
@@ -96,6 +98,12 @@ public class PhraseDetailActivity extends AppCompatActivity {
                         englishSentence,
                         "No English example translation available."
                 )
+        );
+
+        // Apply saved font-size, high-contrast, and simplified-layout settings.
+        AccessibilityPreferences.applyToViewTree(
+                this,
+                getWindow().getDecorView()
         );
     }
 

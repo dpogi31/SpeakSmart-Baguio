@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/app_background"
+    android:fillViewport="true"
+    android:clipToPadding="false">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="32dp">
+
+        <!-- BACK BUTTON -->
+
+        <ImageButton
+            android:id="@+id/buttonAboutBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="16dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Go back"
+            android:padding="12dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_back"
+            android:clickable="true"
+            android:focusable="true"
+            app:tint="@color/accent_teal" />
+
+        <!-- PAGE TITLE -->
+
+        <TextView
+            android:id="@+id/aboutSpeakSmartTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:text="About Speak Smart Baguio"
+            android:textColor="@color/accent_teal"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:lineSpacingExtra="3dp"
+            android:accessibilityHeading="true" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="24dp"
+            android:text="Translator · Dictionary · Phrasebook"
+            android:textColor="@color/text_light"
+            android:textSize="18sp"
+            android:lineSpacingExtra="4dp" />
+
+        <!-- INTRODUCTION -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="About the Application"
+            android:textColor="@color/text_light"
+            android:textSize="23sp"
+            android:textStyle="bold"
+            android:accessibilityHeading="true" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Speak Smart Baguio is a language translation and learning application designed to help tourists, visitors, students, and other users explore English, Tagalog, and Ilokano. It brings useful language tools together in one accessible mobile application."
+            android:textColor="@color/text_light"
+            android:textSize="17sp"
+            android:lineSpacingExtra="5dp" />
+
+        <!-- DIVIDER -->
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="28dp"
+            android:layout_marginBottom="24dp"
+            android:background="@color/primary_element"
+            android:importantForAccessibility="no" />
+
+        <!-- MAIN FEATURES -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Main Features"
+            android:textColor="@color/text_light"
+            android:textSize="23sp"
+            android:textStyle="bold"
+            android:accessibilityHeading="true" />
+
+        <!-- TRANSLATOR -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="1. Translator"
+            android:textColor="@color/accent_teal"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:accessibilityHeading="true" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Explore translations between the supported languages to help understand words and everyday expressions."
+            android:textColor="@color/text_light"
+            android:textSize="17sp"
+            android:lineSpacingExtra="4dp" />
+
+        <!-- DICTIONARY -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="2. Dictionary"
+            android:textColor="@color/accent_teal"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:accessibilityHeading="true" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Look up available words and their meanings or translations to support language learning."
+            android:textColor="@color/text_light"
+            android:textSize="17sp"
+            android:lineSpacingExtra="4dp" />
+
+        <!-- PHRASEBOOK -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="3. Phrasebook"
+            android:textColor="@color/accent_teal"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:accessibilityHeading="true" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Browse useful phrases that can help with common conversations and everyday situations."
+            android:textColor="@color/text_light"
+            android:textSize="17sp"
+            android:lineSpacingExtra="4dp" />
+
+        <!-- FAVORITES -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="4. Favorites"
+            android:textColor="@color/accent_teal"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:accessibilityHeading="true" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Return to words and phrases you have saved for convenient reference."
+            android:textColor="@color/text_light"
+            android:textSize="17sp"
+            android:lineSpacingExtra="4dp" />
+
+        <!-- ACCESSIBILITY DIVIDER -->
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="28dp"
+            android:layout_marginBottom="24dp"
+            android:background="@color/primary_element"
+            android:importantForAccessibility="no" />
+
+        <!-- ACCESSIBILITY INFORMATION -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Designed for Readability"
+            android:textColor="@color/text_light"
+            android:textSize="23sp"
+            android:textStyle="bold"
+            android:accessibilityHeading="true" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Speak Smart Baguio includes accessibility preferences for text size, high contrast, and a simplified layout. You can adjust these settings to make the application more comfortable to use."
+            android:textColor="@color/text_light"
+            android:textSize="17sp"
+            android:lineSpacingExtra="5dp" />
+
+        <!-- FOOTER -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:gravity="center"
+            android:text="Speak Smart Baguio"
+            android:textColor="@color/accent_teal"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:gravity="center"
+            android:text="App Information"
+            android:textColor="@color/hint_text"
+            android:textSize="15sp" />
+
+    </LinearLayout>
+
+</ScrollView>

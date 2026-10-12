@@ -15,7 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
-
+import android.widget.Filter;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -25,7 +25,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.speaksmartbaguio.databinding.FragmentPhrasebookBinding;
 import com.example.speaksmartbaguio.mapper.EntityMapper;
 import com.example.speaksmartbaguio.repository.PhraseRepository;
+import com.example.speaksmartbaguio.utils.AccessibilityPreferences;
 import com.example.speaksmartbaguio.utils.NetworkUtil;
+import com.example.speaksmartbaguio.utils.SettingsMenuHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,6 +91,13 @@ public class PhrasebookFragment extends Fragment {
         setupRecyclerView();
         setupLanguageDropdown();
         setupSearch();
+        setupSettingsMenuButton();
+
+        // Apply saved accessibility settings to the Phrasebook screen.
+        AccessibilityPreferences.applyToViewTree(
+                requireContext(),
+                view
+        );
 
         // Display saved phrases immediately.
         loadOfflinePhrases();
@@ -97,6 +106,20 @@ public class PhrasebookFragment extends Fragment {
         if (NetworkUtil.isOnline(requireContext())) {
             loadPhrases(true);
         }
+    }
+
+    // ---------------------------------------------------------
+    // SHARED SETTINGS MENU
+    // ---------------------------------------------------------
+
+    private void setupSettingsMenuButton() {
+        if (binding == null) {
+            return;
+        }
+
+        binding.buttonSettingsMenu.setOnClickListener(
+                v -> SettingsMenuHelper.show(v)
+        );
     }
 
     // ---------------------------------------------------------
@@ -118,11 +141,15 @@ public class PhrasebookFragment extends Fragment {
                     tts.setLanguage(Locale.US);
                 }
             } else if (isAdded()) {
-                Toast.makeText(
-                        requireContext(),
-                        "Text-to-speech initialization failed.",
-                        Toast.LENGTH_SHORT
-                ).show();
+                Context currentContext = getContext();
+
+                if (currentContext != null) {
+                    Toast.makeText(
+                            currentContext,
+                            "Text-to-speech initialization failed.",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                }
             }
         });
     }
@@ -132,7 +159,6 @@ public class PhrasebookFragment extends Fragment {
     // ---------------------------------------------------------
 
     private void setupRecyclerView() {
-
         adapter = new PhrasebookAdapter(
                 new ArrayList<>(),
                 this::speakPhrase,
@@ -158,7 +184,6 @@ public class PhrasebookFragment extends Fragment {
 
         binding.recyclerViewPhrasebook.addOnScrollListener(
                 new RecyclerView.OnScrollListener() {
-
                     @Override
                     public void onScrolled(
                             @NonNull RecyclerView recyclerView,
@@ -184,17 +209,20 @@ public class PhrasebookFragment extends Fragment {
         );
     }
 
-    // ---------------------------------------------------------
-    // LANGUAGE DROPDOWN
-    // ---------------------------------------------------------
+// ---------------------------------------------------------
+// LANGUAGE DROPDOWN
+// Keeps all languages visible and toggles open/close on tap.
+// ---------------------------------------------------------
 
     private void setupLanguageDropdown() {
 
-        String[] languages = {
+        // Keep the complete list of available languages.
+        final String[] languages = {
                 "English",
                 "Tagalog"
         };
 
+        // Load the saved language preference.
         SharedPreferences prefs =
                 requireContext().getSharedPreferences(
                         "PhrasePrefs",
@@ -206,43 +234,159 @@ public class PhrasebookFragment extends Fragment {
                 "English"
         );
 
-        if (!"Tagalog".equals(selectedLanguage)) {
+        // Validate the saved language.
+        if (!"English".equals(selectedLanguage)
+                && !"Tagalog".equals(selectedLanguage)) {
+
             selectedLanguage = "English";
         }
 
+        // Create an adapter that always returns every language.
         ArrayAdapter<String> dropdownAdapter =
-                new ArrayAdapter<>(
+                new ArrayAdapter<String>(
                         requireContext(),
                         R.layout.dropdown_item_bold,
-                        languages
-                );
+                        new ArrayList<>(
+                                java.util.Arrays.asList(languages)
+                        )
+                ) {
 
+                    private final Filter showAllLanguagesFilter =
+                            new Filter() {
+
+                                @Override
+                                protected FilterResults performFiltering(
+                                        CharSequence constraint
+                                ) {
+
+                                    FilterResults results =
+                                            new FilterResults();
+
+                                    ArrayList<String> allLanguages =
+                                            new ArrayList<>(
+                                                    java.util.Arrays.asList(languages)
+                                            );
+
+                                    results.values = allLanguages;
+                                    results.count = allLanguages.size();
+
+                                    return results;
+                                }
+
+                                @Override
+                                protected void publishResults(
+                                        CharSequence constraint,
+                                        FilterResults results
+                                ) {
+
+                                    if (results == null
+                                            || results.values == null) {
+                                        return;
+                                    }
+
+                                    @SuppressWarnings("unchecked")
+                                    List<String> allLanguages =
+                                            (List<String>) results.values;
+
+                                    clear();
+                                    addAll(allLanguages);
+                                    notifyDataSetChanged();
+                                }
+                            };
+
+                    @NonNull
+                    @Override
+                    public Filter getFilter() {
+                        return showAllLanguagesFilter;
+                    }
+                };
+
+        // Attach the dropdown adapter.
         binding.languageDropdown.setAdapter(dropdownAdapter);
 
+        // Preserve the existing dropdown appearance.
         binding.languageDropdown.setDropDownBackgroundResource(
                 R.drawable.dropdown_glass_background
         );
 
+        // Prevent manual typing.
         binding.languageDropdown.setKeyListener(null);
         binding.languageDropdown.setFocusable(false);
-        binding.languageDropdown.setInputType(InputType.TYPE_NULL);
+        binding.languageDropdown.setInputType(
+                InputType.TYPE_NULL
+        );
         binding.languageDropdown.setThreshold(0);
 
+        // Preserve the existing hint.
         binding.languageDropdownLayout.setHint(
                 "Select Target Language"
         );
 
+        // Restore the saved selection.
         binding.languageDropdown.setText(
                 selectedLanguage,
                 false
         );
 
-        adapter.setSelectedLanguage(selectedLanguage);
+        // Update the Phrasebook adapter's selected language.
+        if (adapter != null) {
+            adapter.setSelectedLanguage(selectedLanguage);
+            adapter.notifyDataSetChanged();
+        }
 
-        binding.languageDropdown.setOnClickListener(v ->
-                binding.languageDropdown.showDropDown()
+        // Track the dropdown's open/closed state.
+        final boolean[] isDropdownOpen = {false};
+
+        // Toggle the dropdown when the field or arrow is tapped.
+        View.OnClickListener toggleDropdown = v -> {
+
+            if (binding == null) {
+                return;
+            }
+
+            // Close it if it is already open.
+            if (isDropdownOpen[0]) {
+                binding.languageDropdown.dismissDropDown();
+                isDropdownOpen[0] = false;
+                return;
+            }
+
+            // Otherwise, restore all languages and open it.
+            dropdownAdapter.getFilter().filter(
+                    "",
+                    count -> {
+
+                        if (binding == null) {
+                            return;
+                        }
+
+                        binding.languageDropdown.setAdapter(
+                                dropdownAdapter
+                        );
+
+                        // Keep the current selection unchanged.
+                        binding.languageDropdown.setText(
+                                selectedLanguage,
+                                false
+                        );
+
+                        binding.languageDropdown.showDropDown();
+                        isDropdownOpen[0] = true;
+                    }
+            );
+        };
+
+        // Tapping the field opens or closes the dropdown.
+        binding.languageDropdown.setOnClickListener(
+                toggleDropdown
         );
 
+        // Tapping the dropdown arrow does the same.
+        binding.languageDropdownLayout.setEndIconOnClickListener(
+                toggleDropdown
+        );
+
+        // Handle language selection.
         binding.languageDropdown.setOnItemClickListener(
                 (parent, itemView, position, id) -> {
 
@@ -255,6 +399,7 @@ public class PhrasebookFragment extends Fragment {
 
                     selectedLanguage = selectedItem.toString();
 
+                    // Save the language preference.
                     prefs.edit()
                             .putString(
                                     "selectedLanguage",
@@ -262,27 +407,35 @@ public class PhrasebookFragment extends Fragment {
                             )
                             .apply();
 
+                    // Display the selected language.
                     binding.languageDropdown.setText(
                             selectedLanguage,
                             false
                     );
 
-                    adapter.setSelectedLanguage(
-                            selectedLanguage
-                    );
+                    // Mark the dropdown as closed.
+                    isDropdownOpen[0] = false;
+
+                    // Update the existing Phrasebook adapter.
+                    if (adapter != null) {
+                        adapter.setSelectedLanguage(
+                                selectedLanguage
+                        );
+
+                        adapter.notifyDataSetChanged();
+                    }
                 }
         );
     }
+
 
     // ---------------------------------------------------------
     // SEARCH
     // ---------------------------------------------------------
 
     private void setupSearch() {
-
         binding.searchBar.addTextChangedListener(
                 new TextWatcher() {
-
                     @Override
                     public void beforeTextChanged(
                             CharSequence s,
@@ -302,7 +455,7 @@ public class PhrasebookFragment extends Fragment {
                     ) {
                         pendingSearchQuery = s.toString().trim();
 
-                        // Update teal highlighting immediately.
+                        // Update search highlighting immediately.
                         if (adapter != null) {
                             adapter.setSearchQuery(
                                     pendingSearchQuery
@@ -333,7 +486,6 @@ public class PhrasebookFragment extends Fragment {
     // ---------------------------------------------------------
 
     private void loadPhrases(boolean reset) {
-
         if (binding == null || !isAdded()) {
             return;
         }
@@ -346,20 +498,17 @@ public class PhrasebookFragment extends Fragment {
 
         // Offline mode uses the local Room database.
         if (!NetworkUtil.isOnline(context)) {
-
             if (pendingSearchQuery.isEmpty()) {
                 loadOfflinePhrases();
             } else {
                 searchOfflinePhrases(pendingSearchQuery);
             }
 
-            if (isAdded()) {
-                Toast.makeText(
-                        context,
-                        "Offline Mode — showing saved phrases",
-                        Toast.LENGTH_SHORT
-                ).show();
-            }
+            Toast.makeText(
+                    context,
+                    "Offline Mode — showing saved phrases",
+                    Toast.LENGTH_SHORT
+            ).show();
 
             return;
         }
@@ -385,8 +534,7 @@ public class PhrasebookFragment extends Fragment {
             adapter.setPaginationState(true, true);
         }
 
-        // Capture the query for this request so that results from
-        // an older search do not replace a newer search.
+        // Capture the query and page for this request.
         final String requestedQuery = pendingSearchQuery;
         final int requestedPage = currentPage;
 
@@ -406,16 +554,17 @@ public class PhrasebookFragment extends Fragment {
                             return;
                         }
 
-                        // Ignore stale results if the query changed
-                        // while this request was running.
+                        // Ignore results for an older search.
                         if (!requestedQuery.equals(
                                 pendingSearchQuery
                         )) {
                             isLoading = false;
+
                             adapter.setPaginationState(
                                     false,
                                     hasMore
                             );
+
                             loadPhrases(true);
                             return;
                         }
@@ -435,27 +584,17 @@ public class PhrasebookFragment extends Fragment {
                             adapter.filterList(
                                     new ArrayList<>(safeItems)
                             );
-
-                            // Save the first page locally as well.
-                            if (!safeItems.isEmpty()) {
-                                repository.insertAll(
-                                        EntityMapper
-                                                .toPhraseEntityList(
-                                                        safeItems
-                                                )
-                                );
-                            }
                         } else {
                             adapter.addItems(safeItems);
+                        }
 
-                            if (!safeItems.isEmpty()) {
-                                repository.insertAll(
-                                        EntityMapper
-                                                .toPhraseEntityList(
-                                                        safeItems
-                                                )
-                                );
-                            }
+                        // Save returned phrases for offline use.
+                        if (!safeItems.isEmpty()) {
+                            repository.insertAll(
+                                    EntityMapper.toPhraseEntityList(
+                                            safeItems
+                                    )
+                            );
                         }
 
                         hasMore = more;
@@ -474,7 +613,6 @@ public class PhrasebookFragment extends Fragment {
 
                     @Override
                     public void onError(String error) {
-
                         isLoading = false;
 
                         if (binding == null || !isAdded()) {
@@ -490,7 +628,7 @@ public class PhrasebookFragment extends Fragment {
                                 hasMore
                         );
 
-                        // Use locally saved phrases if available.
+                        // Fall back to locally saved phrases.
                         if (requestedQuery.isEmpty()) {
                             loadOfflinePhrases();
                         } else {
@@ -519,19 +657,16 @@ public class PhrasebookFragment extends Fragment {
     // ---------------------------------------------------------
 
     private void loadOfflinePhrases() {
-
         if (repository == null) {
             return;
         }
 
         repository.getAllPhrases(result -> {
-
             if (!isAdded()) {
                 return;
             }
 
             requireActivity().runOnUiThread(() -> {
-
                 if (binding == null || adapter == null) {
                     return;
                 }
@@ -560,19 +695,16 @@ public class PhrasebookFragment extends Fragment {
     // ---------------------------------------------------------
 
     private void searchOfflinePhrases(String query) {
-
         if (repository == null) {
             return;
         }
 
         repository.searchPhrases(query, result -> {
-
             if (!isAdded()) {
                 return;
             }
 
             requireActivity().runOnUiThread(() -> {
-
                 if (binding == null || adapter == null) {
                     return;
                 }
@@ -649,15 +781,13 @@ public class PhrasebookFragment extends Fragment {
     // ---------------------------------------------------------
 
     private void speakPhrase(Phrase phrase) {
-
         if (phrase == null || !isAdded()) {
             return;
         }
 
         String audioUrl = phrase.getTtsUrl();
 
-        // If recorded Ilokano audio exists, play it by itself.
-        // Otherwise, speak the selected translation using TTS.
+        // Prefer recorded Ilokano audio when available.
         if (audioUrl != null && !audioUrl.trim().isEmpty()) {
             stopTextToSpeech();
             playAudio(audioUrl);
@@ -691,8 +821,7 @@ public class PhrasebookFragment extends Fragment {
             int languageStatus = tts.setLanguage(targetLocale);
 
             if (languageStatus == TextToSpeech.LANG_MISSING_DATA
-                    || languageStatus
-                    == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    || languageStatus == TextToSpeech.LANG_NOT_SUPPORTED) {
 
                 Toast.makeText(
                         requireContext(),
@@ -718,7 +847,6 @@ public class PhrasebookFragment extends Fragment {
     // ---------------------------------------------------------
 
     private void playAudio(String url) {
-
         stopAudio();
 
         try {

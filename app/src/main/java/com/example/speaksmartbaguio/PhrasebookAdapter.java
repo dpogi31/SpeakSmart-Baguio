@@ -1,5 +1,6 @@
 package com.example.speaksmartbaguio;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -11,11 +12,14 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
-import android.content.Intent;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.speaksmartbaguio.entity.FavoriteEntity;
+import com.example.speaksmartbaguio.repository.FavoriteRepository;
+import com.example.speaksmartbaguio.utils.AccessibilityPreferences;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,28 +31,27 @@ public class PhrasebookAdapter
     private static final int TYPE_ITEM = 0;
     private static final int TYPE_FOOTER = 1;
 
-    // Phrase data displayed in the RecyclerView.
+    private static final String HEART_EMPTY = "♡";
+    private static final String HEART_FILLED = "♥";
+
     private List<Phrase> items;
 
-    // Handles the pronunciation button.
     private final OnPhraseClickListener clickListener;
 
-    // Search and language settings.
     private String searchQuery = "";
     private String selectedLanguage = "English";
 
-    // Pagination settings.
     private boolean isLoading = false;
     private boolean hasMore = true;
 
     private Runnable loadMoreListener;
 
-    // Callback for pronunciation playback.
+    private FavoriteRepository favoriteRepository;
+
     public interface OnPhraseClickListener {
         void onPlayClicked(Phrase phrase);
     }
 
-    // Constructor.
     public PhrasebookAdapter(
             List<Phrase> items,
             OnPhraseClickListener listener,
@@ -57,30 +60,38 @@ public class PhrasebookAdapter
         this.items = items != null ? items : new ArrayList<>();
         this.clickListener = listener;
         this.selectedLanguage =
-                selectedLanguage != null ? selectedLanguage : "English";
+                selectedLanguage != null
+                        ? selectedLanguage
+                        : "English";
     }
 
-    // Update the search query used for highlighting.
+    private FavoriteRepository getFavoriteRepository(View view) {
+        if (favoriteRepository == null) {
+            favoriteRepository = new FavoriteRepository(
+                    view.getContext().getApplicationContext()
+            );
+        }
+
+        return favoriteRepository;
+    }
+
     public void setSearchQuery(String query) {
-        this.searchQuery = query == null
+        searchQuery = query == null
                 ? ""
                 : query.trim().toLowerCase(Locale.ROOT);
 
         notifyDataSetChanged();
     }
 
-    // Update the language shown on each phrase card.
     public void setSelectedLanguage(String language) {
-        if (language == null || language.trim().isEmpty()) {
-            selectedLanguage = "English";
-        } else {
-            selectedLanguage = language;
-        }
+        selectedLanguage =
+                language == null || language.trim().isEmpty()
+                        ? "English"
+                        : language;
 
         notifyDataSetChanged();
     }
 
-    // Update the pagination footer.
     public void setPaginationState(
             boolean isLoading,
             boolean hasMore
@@ -95,22 +106,17 @@ public class PhrasebookAdapter
         }
     }
 
-    // Set the action used to load another page.
     public void setOnLoadMoreListener(Runnable listener) {
-        this.loadMoreListener = listener;
+        loadMoreListener = listener;
     }
 
-    // Identify whether the current row is a phrase or footer.
     @Override
     public int getItemViewType(int position) {
-        if (position == items.size()) {
-            return TYPE_FOOTER;
-        }
-
-        return TYPE_ITEM;
+        return position == items.size()
+                ? TYPE_FOOTER
+                : TYPE_ITEM;
     }
 
-    // Create the correct layout for each row.
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(
@@ -130,8 +136,6 @@ public class PhrasebookAdapter
             return new FooterViewHolder(view);
         }
 
-        // Uses the NEW Phrasebook-only card.
-        // The Dictionary's item_list_card.xml remains unchanged.
         View view = inflater.inflate(
                 R.layout.item_phrasebook_card,
                 parent,
@@ -141,23 +145,23 @@ public class PhrasebookAdapter
         return new PhraseViewHolder(view);
     }
 
-    // Bind data to the appropriate row.
     @Override
     public void onBindViewHolder(
             @NonNull RecyclerView.ViewHolder holder,
             int position
     ) {
         if (holder instanceof PhraseViewHolder) {
-            bindPhrase(
-                    (PhraseViewHolder) holder,
-                    position
-            );
+            bindPhrase((PhraseViewHolder) holder, position);
+
         } else if (holder instanceof FooterViewHolder) {
             bindFooter((FooterViewHolder) holder);
         }
     }
 
-    // Display phrase information.
+    // ---------------------------------------------------------
+    // PHRASE CARD
+    // ---------------------------------------------------------
+
     private void bindPhrase(
             PhraseViewHolder holder,
             int position
@@ -173,48 +177,38 @@ public class PhrasebookAdapter
         }
 
         String ilokano = safeText(phrase.getIlokanoWord());
+        String english = safeText(phrase.getEnglishTranslation());
+        String tagalog = safeText(phrase.getTagalogTranslation());
+        String partOfSpeech = safeText(phrase.getPartOfSpeech());
 
-        String translation;
+        holder.boundIlokano = ilokano;
+        holder.boundEnglish = english;
+        holder.boundTagalog = tagalog;
 
-        if ("Tagalog".equalsIgnoreCase(selectedLanguage)) {
-            translation = safeText(
-                    phrase.getTagalogTranslation()
-            );
-        } else {
-            translation = safeText(
-                    phrase.getEnglishTranslation()
-            );
-        }
+        String translation =
+                "Tagalog".equalsIgnoreCase(selectedLanguage)
+                        ? tagalog
+                        : english;
 
-        String partOfSpeech = safeText(
-                phrase.getPartOfSpeech()
-        );
-
-        // Ilokano phrase.
         holder.textViewIlokano.setText(
                 getHighlightedText(ilokano, searchQuery)
         );
 
-        // Translation according to the selected language.
         holder.textViewSelected.setText(
                 getHighlightedText(translation, searchQuery)
         );
 
-        // Show part of speech only when available.
         if (partOfSpeech.trim().isEmpty()) {
             holder.textViewPartOfSpeech.setVisibility(View.GONE);
         } else {
             holder.textViewPartOfSpeech.setVisibility(View.VISIBLE);
 
             holder.textViewPartOfSpeech.setText(
-                    getHighlightedText(
-                            partOfSpeech,
-                            searchQuery
-                    )
+                    getHighlightedText(partOfSpeech, searchQuery)
             );
         }
 
-        // Clicking the card opens the phrase details.
+        // Open the phrase details screen.
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(
                     v.getContext(),
@@ -223,23 +217,20 @@ public class PhrasebookAdapter
 
             intent.putExtra("id", phrase.getId());
             intent.putExtra("ilokano", ilokano);
-            intent.putExtra(
-                    "english",
-                    safeText(phrase.getEnglishTranslation())
-            );
-            intent.putExtra(
-                    "tagalog",
-                    safeText(phrase.getTagalogTranslation())
-            );
+            intent.putExtra("english", english);
+            intent.putExtra("tagalog", tagalog);
             intent.putExtra("pos", partOfSpeech);
+
             intent.putExtra(
                     "category",
                     safeText(phrase.getCategory())
             );
+
             intent.putExtra(
                     "englishSentence",
                     safeText(phrase.getEnglishSentence())
             );
+
             intent.putExtra(
                     "sentence",
                     safeText(phrase.getIlokanoSentence())
@@ -248,7 +239,7 @@ public class PhrasebookAdapter
             v.getContext().startActivity(intent);
         });
 
-        // Speaker button plays the phrase pronunciation.
+        // Play the phrase pronunciation.
         holder.buttonPlayAudio.setOnClickListener(v -> {
             if (clickListener != null) {
                 clickListener.onPlayClicked(phrase);
@@ -258,13 +249,238 @@ public class PhrasebookAdapter
         holder.buttonPlayAudio.setContentDescription(
                 "Play pronunciation for " + ilokano
         );
+
+        // Show the default heart while checking the database.
+        setHeartState(holder, false, ilokano);
+
+        holder.buttonFavorite.setOnClickListener(v ->
+                toggleFavorite(
+                        holder,
+                        ilokano,
+                        english,
+                        tagalog
+                )
+        );
+
+        // Read the saved favorite state from Room.
+        getFavoriteRepository(holder.itemView).isFavorite(
+                FavoriteRepository.TYPE_PHRASEBOOK,
+                ilokano,
+                english,
+                tagalog,
+                isSaved -> {
+                    if (!isSameBoundPhrase(
+                            holder,
+                            ilokano,
+                            english,
+                            tagalog
+                    )) {
+                        return;
+                    }
+
+                    setHeartState(holder, isSaved, ilokano);
+                }
+        );
+
+        // Apply the saved settings to this dynamically created card.
+        AccessibilityPreferences.applyToViewTree(
+                holder.itemView.getContext(),
+                holder.itemView
+        );
     }
 
-    // Display pagination information.
+    // ---------------------------------------------------------
+    // FAVORITES
+    // ---------------------------------------------------------
+
+    private void toggleFavorite(
+            PhraseViewHolder holder,
+            String ilokano,
+            String english,
+            String tagalog
+    ) {
+        FavoriteRepository repository =
+                getFavoriteRepository(holder.itemView);
+
+        repository.isFavorite(
+                FavoriteRepository.TYPE_PHRASEBOOK,
+                ilokano,
+                english,
+                tagalog,
+                isSaved -> {
+                    if (!isSameBoundPhrase(
+                            holder,
+                            ilokano,
+                            english,
+                            tagalog
+                    )) {
+                        return;
+                    }
+
+                    if (isSaved) {
+                        removeFavorite(
+                                holder,
+                                repository,
+                                ilokano,
+                                english,
+                                tagalog
+                        );
+
+                    } else {
+                        repository.saveFavorite(
+                                FavoriteRepository.TYPE_PHRASEBOOK,
+                                ilokano,
+                                english,
+                                tagalog,
+                                (success, message) -> {
+                                    if (!isSameBoundPhrase(
+                                            holder,
+                                            ilokano,
+                                            english,
+                                            tagalog
+                                    )) {
+                                        return;
+                                    }
+
+                                    if (success) {
+                                        setHeartState(
+                                                holder,
+                                                true,
+                                                ilokano
+                                        );
+                                    }
+
+                                    Toast.makeText(
+                                            holder.itemView.getContext(),
+                                            message,
+                                            Toast.LENGTH_SHORT
+                                    ).show();
+                                }
+                        );
+                    }
+                }
+        );
+    }
+
+    private void removeFavorite(
+            PhraseViewHolder holder,
+            FavoriteRepository repository,
+            String ilokano,
+            String english,
+            String tagalog
+    ) {
+        repository.getFavoritesByType(
+                FavoriteRepository.TYPE_PHRASEBOOK,
+                favorites -> {
+                    if (!isSameBoundPhrase(
+                            holder,
+                            ilokano,
+                            english,
+                            tagalog
+                    )) {
+                        return;
+                    }
+
+                    if (favorites == null) {
+                        Toast.makeText(
+                                holder.itemView.getContext(),
+                                "Could not load Favorites.",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                        return;
+                    }
+
+                    FavoriteEntity match = null;
+
+                    for (FavoriteEntity favorite : favorites) {
+                        if (ilokano.equals(favorite.getIlokanoText())
+                                && english.equals(favorite.getEnglishText())
+                                && tagalog.equals(favorite.getTagalogText())) {
+                            match = favorite;
+                            break;
+                        }
+                    }
+
+                    if (match == null) {
+                        setHeartState(holder, false, ilokano);
+
+                        Toast.makeText(
+                                holder.itemView.getContext(),
+                                "Favorite was not found.",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                        return;
+                    }
+
+                    repository.removeFavorite(
+                            match.getId(),
+                            (success, message) -> {
+                                if (!isSameBoundPhrase(
+                                        holder,
+                                        ilokano,
+                                        english,
+                                        tagalog
+                                )) {
+                                    return;
+                                }
+
+                                if (success) {
+                                    setHeartState(
+                                            holder,
+                                            false,
+                                            ilokano
+                                    );
+                                }
+
+                                Toast.makeText(
+                                        holder.itemView.getContext(),
+                                        message,
+                                        Toast.LENGTH_SHORT
+                                ).show();
+                            }
+                    );
+                }
+        );
+    }
+
+    private void setHeartState(
+            PhraseViewHolder holder,
+            boolean isSaved,
+            String ilokano
+    ) {
+        holder.buttonFavorite.setText(
+                isSaved ? HEART_FILLED : HEART_EMPTY
+        );
+
+        holder.buttonFavorite.setContentDescription(
+                isSaved
+                        ? "Remove " + ilokano + " from Favorites"
+                        : "Add " + ilokano + " to Favorites"
+        );
+    }
+
+    private boolean isSameBoundPhrase(
+            PhraseViewHolder holder,
+            String ilokano,
+            String english,
+            String tagalog
+    ) {
+        return ilokano.equals(holder.boundIlokano)
+                && english.equals(holder.boundEnglish)
+                && tagalog.equals(holder.boundTagalog);
+    }
+
+    // ---------------------------------------------------------
+    // PAGINATION FOOTER
+    // ---------------------------------------------------------
+
     private void bindFooter(FooterViewHolder holder) {
         if (isLoading) {
             holder.footerProgress.setVisibility(View.VISIBLE);
             holder.footerText.setVisibility(View.GONE);
+            holder.footerText.setOnClickListener(null);
 
         } else {
             holder.footerProgress.setVisibility(View.GONE);
@@ -284,15 +500,23 @@ public class PhrasebookAdapter
                 holder.footerText.setOnClickListener(null);
             }
         }
+
+        // Apply accessibility to the footer as well.
+        AccessibilityPreferences.applyToViewTree(
+                holder.itemView.getContext(),
+                holder.itemView
+        );
     }
 
-    // Number of phrase rows plus one pagination footer.
+    // ---------------------------------------------------------
+    // ADAPTER DATA
+    // ---------------------------------------------------------
+
     @Override
     public int getItemCount() {
         return items.size() + 1;
     }
 
-    // Replace the currently displayed phrase list.
     public void filterList(List<Phrase> filteredList) {
         items = filteredList != null
                 ? filteredList
@@ -301,7 +525,6 @@ public class PhrasebookAdapter
         notifyDataSetChanged();
     }
 
-    // Append phrases received from the next page.
     public void addItems(List<Phrase> newItems) {
         if (newItems == null || newItems.isEmpty()) {
             return;
@@ -316,17 +539,20 @@ public class PhrasebookAdapter
         );
     }
 
-    // Safely convert null text into an empty string.
+    // ---------------------------------------------------------
+    // SEARCH HIGHLIGHTING
+    // ---------------------------------------------------------
+
     private String safeText(String value) {
-        return value == null ? "" : value;
+        return value == null ? "" : value.trim();
     }
 
-    // Highlight matching search text with a readable teal background.
     private SpannableString getHighlightedText(
             String text,
             String query
     ) {
         String safeValue = safeText(text);
+
         SpannableString spannable =
                 new SpannableString(safeValue);
 
@@ -340,7 +566,6 @@ public class PhrasebookAdapter
 
         int start = 0;
 
-        // Baguio Frost teal highlight.
         int highlightBackground = Color.rgb(42, 157, 147);
         int highlightText = Color.WHITE;
 
@@ -373,37 +598,48 @@ public class PhrasebookAdapter
         return spannable;
     }
 
-    // Phrase card holder.
+    // ---------------------------------------------------------
+    // VIEW HOLDERS
+    // ---------------------------------------------------------
+
     private static class PhraseViewHolder
             extends RecyclerView.ViewHolder {
 
         TextView textViewIlokano;
         TextView textViewSelected;
         TextView textViewPartOfSpeech;
+        TextView buttonFavorite;
         ImageButton buttonPlayAudio;
+
+        String boundIlokano = "";
+        String boundEnglish = "";
+        String boundTagalog = "";
 
         PhraseViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            textViewIlokano =
-                    itemView.findViewById(R.id.textViewIlokano);
+            textViewIlokano = itemView.findViewById(
+                    R.id.textViewIlokano
+            );
 
-            textViewSelected =
-                    itemView.findViewById(
-                            R.id.textViewSelectedTranslation
-                    );
+            textViewSelected = itemView.findViewById(
+                    R.id.textViewSelectedTranslation
+            );
 
-            textViewPartOfSpeech =
-                    itemView.findViewById(
-                            R.id.textViewPartOfSpeech
-                    );
+            textViewPartOfSpeech = itemView.findViewById(
+                    R.id.textViewPartOfSpeech
+            );
 
-            buttonPlayAudio =
-                    itemView.findViewById(R.id.buttonPlayAudio);
+            buttonFavorite = itemView.findViewById(
+                    R.id.buttonFavorite
+            );
+
+            buttonPlayAudio = itemView.findViewById(
+                    R.id.buttonPlayAudio
+            );
         }
     }
 
-    // Pagination footer holder.
     private static class FooterViewHolder
             extends RecyclerView.ViewHolder {
 
@@ -413,11 +649,13 @@ public class PhrasebookAdapter
         FooterViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            footerProgress =
-                    itemView.findViewById(R.id.footerProgress);
+            footerProgress = itemView.findViewById(
+                    R.id.footerProgress
+            );
 
-            footerText =
-                    itemView.findViewById(R.id.footerText);
+            footerText = itemView.findViewById(
+                    R.id.footerText
+            );
         }
     }
 }
